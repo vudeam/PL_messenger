@@ -1,0 +1,19 @@
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\bin\Debug\netcoreapp3.1\Client WPF.exe
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\bin\Debug\netcoreapp3.1\Client WPF.deps.json
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\bin\Debug\netcoreapp3.1\Client WPF.runtimeconfig.json
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\bin\Debug\netcoreapp3.1\Client WPF.runtimeconfig.dev.json
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\bin\Debug\netcoreapp3.1\Client WPF.dll
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\bin\Debug\netcoreapp3.1\Client WPF.pdb
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.csprojAssemblyReference.cache
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\MainWindow.g.cs
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\App.g.cs
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF_MarkupCompile.cache
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF_MarkupCompile.lref
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\MainWindow.baml
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.g.resources
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.AssemblyInfoInputs.cache
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.AssemblyInfo.cs
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.csproj.CoreCompileInputs.cache
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.dll
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.pdb
+C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.genruntimeconfig.cache
