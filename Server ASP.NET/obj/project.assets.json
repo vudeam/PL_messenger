@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Files\\source\\semester_3\\PL_messenger\\Client WPF\\Client WPF.csproj",
-      "projectName": "Client WPF",
-      "projectPath": "D:\\Files\\source\\semester_3\\PL_messenger\\Client WPF\\Client WPF.csproj",
+      "projectUniqueName": "D:\\Files\\source\\semester_3\\PL_messenger\\Server ASP.NET\\Server ASP.NET.csproj",
+      "projectName": "Server ASP.NET",
+      "projectPath": "D:\\Files\\source\\semester_3\\PL_messenger\\Server ASP.NET\\Server ASP.NET.csproj",
       "packagesPath": "C:\\Users\\vadim\\.nuget\\packages\\",
-      "outputPath": "D:\\Files\\source\\semester_3\\PL_messenger\\Client WPF\\obj\\",
+      "outputPath": "D:\\Files\\source\\semester_3\\PL_messenger\\Server ASP.NET\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\vadim\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -54,11 +54,11 @@
         "assetTargetFallback": true,
         "warn": true,
         "frameworkReferences": {
+          "Microsoft.AspNetCore.App": {
+            "privateAssets": "none"
+          },
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
-          },
-          "Microsoft.WindowsDesktop.App.WPF": {
-            "privateAssets": "none"
           }
         },
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.403\\RuntimeIdentifierGraph.json"
