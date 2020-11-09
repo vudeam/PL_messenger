@@ -17,22 +17,3 @@ C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3
 C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.dll
 C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.pdb
 C:\Users\agaba\Source\Repos\vudeam\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.genruntimeconfig.cache
-D:\Files\source\semester_3\PL_messenger\Client WPF\bin\Debug\netcoreapp3.1\Client WPF.exe
-D:\Files\source\semester_3\PL_messenger\Client WPF\bin\Debug\netcoreapp3.1\Client WPF.deps.json
-D:\Files\source\semester_3\PL_messenger\Client WPF\bin\Debug\netcoreapp3.1\Client WPF.runtimeconfig.json
-D:\Files\source\semester_3\PL_messenger\Client WPF\bin\Debug\netcoreapp3.1\Client WPF.runtimeconfig.dev.json
-D:\Files\source\semester_3\PL_messenger\Client WPF\bin\Debug\netcoreapp3.1\Client WPF.dll
-D:\Files\source\semester_3\PL_messenger\Client WPF\bin\Debug\netcoreapp3.1\Client WPF.pdb
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.csprojAssemblyReference.cache
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\MainWindow.g.cs
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\App.g.cs
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF_MarkupCompile.cache
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF_MarkupCompile.lref
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\MainWindow.baml
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.g.resources
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.AssemblyInfoInputs.cache
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.AssemblyInfo.cs
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.csproj.CoreCompileInputs.cache
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.dll
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.pdb
-D:\Files\source\semester_3\PL_messenger\Client WPF\obj\Debug\netcoreapp3.1\Client WPF.genruntimeconfig.cache
