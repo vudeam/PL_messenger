@@ -12,14 +12,61 @@
             <RowDefinition Height="1*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="260"></ColumnDefinition>
-            <ColumnDefinition Width="1*"></ColumnDefinition>
+            <ColumnDefinition Width="260"/>
+            <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
         <Grid Grid.Row="1" Grid.Column="1" ShowGridLines="True">
             <Grid.RowDefinitions >
-                <RowDefinition Height="1*"></RowDefinition>
-                <RowDefinition Height="100"></RowDefinition>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="100"/>
             </Grid.RowDefinitions>
+        </Grid>
+        <Grid Grid.Row="0" Grid.Column="0" Background="#A0B4C8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Ellipse Height="60" Width="60" HorizontalAlignment="Right" Fill="#C6D2DE"></Ellipse>
+            <WrapPanel Grid.Column="1" Orientation="Horizontal" Grid.ColumnSpan="2" VerticalAlignment="Center">
+                <Label x:Name="nicknameLabel"
+               Content="Nickname"
+               Foreground="Black"
+               FontSize="18"
+               FontFamily="Myriad Pro"/>
+                <Label
+                x:Name="idLabel"
+                Content="#id"
+                Foreground="#666666"
+                FontSize="18"
+                FontFamily="Myriad Pro"/>
+                <Label
+                x:Name="connectLabel"
+                Content="Connect status"
+                Foreground="#4D4D4D"
+                FontSize="14"
+                Padding="6 0 60 0"
+                FontFamily="Myriad Pro"/>
+            </WrapPanel>
+        </Grid>
+        <Grid Grid.Row="0" Grid.Column="1" Background="#C6D2DE">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Ellipse Height="60" Width="60" HorizontalAlignment="Right" Fill="#00BAA6"></Ellipse>
+            <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center">
+                <Label x:Name="groupNameLabel"
+               Content="Group"
+               Foreground="Black"
+               FontSize="18"/>
+                <Label
+                x:Name="MembersLabel"
+                Content="Members count"
+                Foreground="#4D4D4D"
+                FontSize="14"
+                Padding="6 0 60 0"
+                FontFamily="Myriad Pro"/>
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>
