@@ -1,10 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "GfHWEtBpDwz5OQ5guKDCFaDK+Q+fMPfEMAfzKWdc4vp+V+EgXt7cCGDkxjrJ+GpAb29aRbmfuyd9yFFON9RaNQ==",
+  "dgSpecHash": "29h84OzukwhVIyUl/+Srs9yIkR5HKq9V8V8PFFG9fkwH3QbLDb0OT/lWS/T2Lc1H6HGbHBwd3yG43XZ0rAZtPw==",
   "success": true,
   "projectFilePath": "D:\\Files\\source\\semester_3\\PL_messenger\\Server ASP.NET\\Server ASP.NET.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\vadim\\.nuget\\packages\\newtonsoft.json\\12.0.3\\newtonsoft.json.12.0.3.nupkg.sha512"
-  ],
+  "expectedPackageFiles": [],
   "logs": []
 }
