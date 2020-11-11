@@ -7,31 +7,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace Server_ASPNET
+namespace VectorChat.ServerASPNET
 {
-	public struct Message
-	{
-		public String Content { get; set; }
-		public String FromID { get; set; }
-		public DateTime Timestamp { get; set; }
-
-		public override String ToString()
-		{
-			return String.Format(
-				"[{0}] {1} : {2}",
-				this.Timestamp.ToLongTimeString(),
-				this.FromID,
-				this.Content
-			);
-		}
-	}
-
 	public class Server
 	{
 		public static void Main(String[] args)
 		{
 			CreateHostBuilder(args).Build().Run();
-			Console.WriteLine("\nPress Enter to close this window...");
+			Console.WriteLine(Environment.NewLine + "Press Enter to close this window...");
 			Console.ReadLine();
 
 			return;

@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace Server_ASPNET.Controllers
+using VectorChat.Utilities;
+
+namespace VectorChat.ServerASPNET.Controllers
 {
 	/// <summary>
 	/// Route: /api
@@ -15,13 +18,15 @@ namespace Server_ASPNET.Controllers
 	[ApiController]
 	public class ChatEngine : ControllerBase
 	{
-		public static readonly ILogger logger = LoggerFactory.Create(logBuilder =>
+		public static readonly ILogger consoleLogger = LoggerFactory.Create(logBuilder =>
 		{
 			logBuilder.AddConsole();
 			logBuilder.AddDebug();
 		}).CreateLogger<ChatEngine>();
 
-		public static List<Message> Messages = new List<Message>();
+		//public static readonly ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "log.txt"));
+
+		public static List<Message> messages = new List<Message>();
 
 		/// <summary>
 		/// Route: GET /api/messages
@@ -30,16 +35,24 @@ namespace Server_ASPNET.Controllers
 		[Produces("application/json")]
 		public IActionResult GetAllMessages()
 		{
-			logger.Log(
+			//fileLogger.Log(
+			//	LogLevel.Information,
+			//	"{0,6} {1} {2}, output {3} message(-s)",
+			//	this.Request.Method,
+			//	this.Response.StatusCode,
+			//	this.Request.Path,
+			//	messages.Count
+			//);
+			consoleLogger.Log(
 				LogLevel.Information,
 				"{0,6} {1} {2}, output {3} message(-s)",
 				this.Request.Method,
 				this.Response.StatusCode,
 				this.Request.Path,
-				Messages.Count
+				messages.Count
 			);
 
-			return Ok(JsonSerializer.Serialize(Messages));
+			return Ok(JsonSerializer.Serialize(messages));
 		}
 
 		/// <summary>
@@ -48,18 +61,26 @@ namespace Server_ASPNET.Controllers
 		[HttpPost("messages")]
 		public IActionResult PostMessage([FromBody] Message IncomingMessage)
 		{
-			Messages.Add(IncomingMessage);
+			messages.Add(IncomingMessage);
 
-			logger.Log(
+			//fileLogger.Log(
+			//	LogLevel.Information,
+			//	"{0,6} {1} {2}, got Message: {3}",
+			//	this.Request.Method,
+			//	this.Response.StatusCode,
+			//	this.Request.Path,
+			//	messages[messages.Count - 1].ToString()
+			//);
+			consoleLogger.Log(
 				LogLevel.Information,
 				"{0,6} {1} {2}, got Message: {3}",
 				this.Request.Method,
 				this.Response.StatusCode,
 				this.Request.Path,
-				Messages[Messages.Count - 1].ToString()
+				messages[messages.Count - 1].ToString()
 			);
 
-			return Ok(Messages.Count);
+			return Ok(messages.Count);
 		}
 
 		/// <summary>
@@ -68,7 +89,14 @@ namespace Server_ASPNET.Controllers
 		[HttpGet("welcome")]
 		public IActionResult WelcomeMessage()
 		{
-			logger.Log(
+			//fileLogger.Log(
+			//	LogLevel.Information,
+			//	"{0,6} {1} {2}",
+			//	this.Request.Method,
+			//	this.Response.StatusCode,
+			//	this.Request.Path
+			//);
+			consoleLogger.Log(
 				LogLevel.Information,
 				"{0,6} {1} {2}",
 				this.Request.Method,
@@ -76,7 +104,7 @@ namespace Server_ASPNET.Controllers
 				this.Request.Path
 			);
 
-			Messages.Add(new Message() { Content = "Hello", FromID = "id0", Timestamp = DateTime.Now });
+			messages.Add(new Message() { Content = "Hello", FromID = "id0", Timestamp = DateTime.Now });
 
 			return Ok("Hello there, General Kenobi");
 		}
@@ -88,13 +116,22 @@ namespace Server_ASPNET.Controllers
 		[Produces("application/json")]
 		public IActionResult WelcomeMessage(String _name)
 		{
-			logger.Log(
+			//fileLogger.Log(
+			//	LogLevel.Information,
+			//	"{0,6} {1} {2}",
+			//	this.Request.Method,
+			//	this.Response.StatusCode,
+			//	this.Request.Path
+			//);
+			consoleLogger.Log(
 				LogLevel.Information,
 				"{0,6} {1} {2}",
 				this.Request.Method,
 				this.Response.StatusCode,
 				this.Request.Path
 			);
+
+			messages.Add(new Message() { Content = $"Hello, {_name}", FromID = "id0", Timestamp = DateTime.Now });
 
 			return Ok(JsonSerializer.Serialize($"Welcome, {_name}"));
 		}
@@ -105,7 +142,15 @@ namespace Server_ASPNET.Controllers
 		[HttpPost("requestBody")]
 		public IActionResult OutputRequest([FromBody] int value)
 		{
-			logger.Log(
+			//fileLogger.Log(
+			//	LogLevel.Information,
+			//	"{0,6} {1} {2} :{3}",
+			//	this.Request.Method,
+			//	this.Response.StatusCode,
+			//	this.Request.Path,
+			//	value.ToString()
+			//);
+			consoleLogger.Log(
 				LogLevel.Information,
 				"{0,6} {1} {2} :{3}",
 				this.Request.Method,

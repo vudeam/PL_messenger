@@ -7,7 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Server_ASPNET
+using VectorChat.Utilities;
+
+namespace VectorChat.ServerASPNET
 {
 	public class Startup
 	{

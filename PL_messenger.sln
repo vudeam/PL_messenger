@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client_WPF", "Client_WPF\Client_WPF.csproj", "{430DBEEF-3A31-4230-890A-4A0CA896872B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client_WPF", "Client_WPF\Client_WPF.csproj", "{430DBEEF-3A31-4230-890A-4A0CA896872B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server_ASPNET", "Server_ASPNET\Server_ASPNET.csproj", "{F75F35E6-6269-4C78-813D-90397949EB88}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server_ASPNET", "Server_ASPNET\Server_ASPNET.csproj", "{F75F35E6-6269-4C78-813D-90397949EB88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilities", "Utilities\Utilities.csproj", "{9CADF8DB-E8C5-4DBE-90CB-511B5DE9B6BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{F75F35E6-6269-4C78-813D-90397949EB88}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F75F35E6-6269-4C78-813D-90397949EB88}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F75F35E6-6269-4C78-813D-90397949EB88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CADF8DB-E8C5-4DBE-90CB-511B5DE9B6BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CADF8DB-E8C5-4DBE-90CB-511B5DE9B6BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CADF8DB-E8C5-4DBE-90CB-511B5DE9B6BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CADF8DB-E8C5-4DBE-90CB-511B5DE9B6BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
