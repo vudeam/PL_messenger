@@ -4,13 +4,17 @@ using System.Text;
 
 namespace VectorChat.Utilities
 {
-	public struct config
+	/// <summary>
+	/// This structure must be serialized and written to a file.
+	/// </summary>
+	[Serializable]
+	public struct Config
 	{
 		public uint messageRequestTime { get; set; }
-		public string ServerAddress { get; set; }
-		public config(uint _messageRequestTime, string _ServerAdress) {
+		public string serverAddress { get; set; }
+		public Config(uint _messageRequestTime, string _ServerAdress) {
 			messageRequestTime = _messageRequestTime;
-			ServerAddress = _ServerAdress;
+			serverAddress = _ServerAdress;
 		}
 	}
 }
