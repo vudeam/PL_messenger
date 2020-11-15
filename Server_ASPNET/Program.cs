@@ -1,16 +1,19 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using VectorChat.Utilities.Credentials;
 
 namespace VectorChat.ServerASPNET
 {
 	public class Server
 	{
+		public static List<Account> accounts = new List<Account>();
+		public static List<User> users = new List<User>();
+
 		public static void Main(String[] args)
 		{
 			CreateHostBuilder(args).Build().Run();
