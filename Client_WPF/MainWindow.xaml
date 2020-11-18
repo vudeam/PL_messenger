@@ -21,13 +21,11 @@
                 <RowDefinition x:Name="messageTextBoxCellHeight" Height="85"/>
             </Grid.RowDefinitions>
             <ScrollViewer Grid.Row="0">
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
-                    <Rectangle Fill="Green" Height="100" Width="200" Margin="20"></Rectangle>
-                    <Rectangle Fill="Green" Height="100" Width="200" Margin="20"></Rectangle>
-                    <Rectangle Fill="Green" Height="100" Width="200" Margin="20"></Rectangle>
-                    <Rectangle Fill="Green" Height="100" Width="200" Margin="20"></Rectangle>
-                    <Rectangle Fill="Green" Height="100" Width="200" Margin="20"></Rectangle>
-                </StackPanel>
+                <ListBox x:Name="messagesList"
+                         HorizontalAlignment="Left"
+                         Background="{x:Null}"
+                         BorderBrush="{x:Null}">
+                </ListBox>
             </ScrollViewer>
             <Rectangle Grid.Row="1" 
 					   Margin="30 20 30 20"
@@ -43,7 +41,7 @@
 					 Grid.Row="1"
                      Text=""
 					 TextChanged="messageTextBox_TextChanged"
-                     MaxLength="600"
+                     MaxLength="500"
 					 Cursor="IBeam"
 					 Margin="40,20,185,20"
 					 Padding="10,10,15,10"
