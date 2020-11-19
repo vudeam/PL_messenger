@@ -25,7 +25,7 @@ namespace VectorChat.Client_WPF
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private Config configInfo;
+		private ClientConfig configInfo;
 		private int maxLines = 5;
 		private double messageTextBoxCellStartHeight;
 
@@ -51,17 +51,17 @@ namespace VectorChat.Client_WPF
 			//Loading a configuration file from a local directory if it exists or creating it if it does not exist
 			if (File.Exists(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json")))
 			{
-				configInfo = JsonSerializer.Deserialize<Config>(File.ReadAllText(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json")));
+				configInfo = JsonSerializer.Deserialize<ClientConfig>(File.ReadAllText(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json")));
 			}
 			else
 			{
-				configInfo = new Config(200, "http://localhost:5005");
+				configInfo = new ClientConfig(200, "http://localhost:5005");
 				File.WriteAllText(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json"), JsonSerializer.Serialize(configInfo));
 			}
 			
 			//Getting start information
 			messageTextBoxCellStartHeight = messageTextBoxCellHeight.Height.Value;
-			messagesRequesing();
+			MessagesRequesing(); 
 		}
 
 		private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -110,7 +110,7 @@ namespace VectorChat.Client_WPF
 			}
 		}
  
-		private void messagesRequesing()
+		private void MessagesRequesing()
 		{
 			Message message1 = new Message()
 			{
@@ -191,7 +191,7 @@ namespace VectorChat.Client_WPF
 			mainGrid.Children.Add(vertStack);
 
 			messagesArea.Items.Add(mainGrid);
-			var renderedMessageGrid = (((messagesArea.Items[messagesArea.Items.Count-1] as Grid).Children[0] as StackPanel).Children[1] as StackPanel).Children[0] as Grid;
+			var renderedMessageGrid = (((messagesArea.Items[^1] as Grid).Children[0] as StackPanel).Children[1] as StackPanel).Children[0] as Grid; //So it should.
 			foreach (var objects in renderedMessageGrid.Children)
 			{
 				if (objects.GetType().Equals(typeof(TextBox)))
