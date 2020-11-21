@@ -2,43 +2,52 @@
 
 namespace VectorChat.Utilities.Credentials
 {
-	public struct User
+	public class User
 	{
 		public string nickname { get; set; }
 		public uint userID { get; set; }
-		public override string ToString() => String.Format("{0}#{1}", this.nickname, this.userID);
+		public override string ToString() => $"{this.nickname}#{this.userID}";
 	}
 
-	public struct Account
+	public class Account
 	{
 		public string login { get; set; }
 		public string password { get; set; }
-		public override string ToString() => String.Format("{0}:{1}", this.login, this.password);
+		public override string ToString() => $"{this.login}:{this.password}";
 	}
 
-	public struct SignupRequest
+	public class SignupRequest
 	{
 		public Account acc { get; set; }
 		public string nickname { get; set; }
 	}
 
+	/// <summary>
+	/// Sample struct of authentication response. Server authentication responds with <c>AuthResponse</c> serialized in JSON.
+	/// </summary>
+	/// <remarks>
+	/// Consists of:
+	/// <list type="number">
+	/// <item><see cref="VectorChat.Utilities.ApiErrCodes"/> - API error code (<c>0</c> - Success)</item>
+	/// <item>Default description for the exact error code</item>
+	/// <item><see cref="VectorChat.Utilities.Credentials.User"/> - responded <c>User</c> object</item>
+	/// <item>Token string for (possible) message encryption</item>
+	/// </list>
+	/// </remarks>
 	public struct AuthResponse
 	{
 		public ApiErrCodes code { get; set; }
 		public string defaultMessage { get; set; }
-		public Account? acc { get; set; }
-		public User? usr { get; set; }
+		public User usr { get; set; }
 		public string token { get; set; }
 		public override string ToString()
 		{
-			return string.Format(
-				"Code {0} ('{1}')" + Environment.NewLine + "Account {2}:{3}" + Environment.NewLine + "User {4}#{5}" + Environment.NewLine + "Token: {6}",
+			return String.Format(
+				"Code {0} ('{1}')" + Environment.NewLine + "User {2}#{3}" + Environment.NewLine + "Token: {5}",
 				this.code,
 				this.defaultMessage,
-				this.acc.HasValue ? this.acc.Value.login : String.Empty,
-				this.acc.HasValue ? this.acc.Value.password : String.Empty,
-				this.usr.HasValue ? this.usr.Value.nickname : String.Empty,
-				this.usr.HasValue ? this.usr.Value.userID.ToString() : String.Empty,
+				this.usr != null ? this.usr.nickname : String.Empty,
+				this.usr != null ? this.usr.userID.ToString() : String.Empty,
 				this.token
 			);
 		}

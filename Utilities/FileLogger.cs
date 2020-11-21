@@ -7,8 +7,8 @@ namespace VectorChat.Utilities
 {
 	public class FileLogger : ILogger
 	{
-		private String logFilePath;
-		private static Object _locker = new Object(); // placeholder for lock
+		private string logFilePath;
+		private static object _locker = new object(); // placeholder for lock
 
 		public FileLogger(String _logFilePath)
 		{
@@ -17,10 +17,11 @@ namespace VectorChat.Utilities
 
 		public IDisposable BeginScope<TState>(TState state) { return null; } // because it does not matter
 
-		public Boolean IsEnabled(LogLevel level) { return true; } // always available
+		public bool IsEnabled(LogLevel level) { return true; } // always available
 
 		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception ex, Func<TState, Exception, string> formatter)
 		{
+			string logPrefix;
 			switch (logLevel)
 			{
 				case LogLevel.None:
@@ -28,9 +29,10 @@ namespace VectorChat.Utilities
 				default:
 					if (formatter != null)
 					{
+						logPrefix = "[INFO]";
 						lock (_locker)
 						{
-							File.AppendAllText(this.logFilePath, formatter(state, ex) + Environment.NewLine, Encoding.UTF8);
+							File.AppendAllText(this.logFilePath, $"{logPrefix} {formatter(state, ex)}{Environment.NewLine}", Encoding.UTF8);
 						}
 					}
 					break;
