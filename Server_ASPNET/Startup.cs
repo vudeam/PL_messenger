@@ -1,6 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,10 @@ namespace VectorChat.ServerASPNET
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddControllers();
+			services.Configure<IdentityOptions>(options =>
+			{
+				options.SignIn.RequireConfirmedEmail = true;
+			});
 
 			return;
 		}

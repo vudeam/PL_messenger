@@ -17,7 +17,7 @@ namespace VectorChat.ServerASPNET.Controllers
 	[ApiController]
 	public class ChatController : Controller
 	{
-		public static readonly ILogger consoleLogger = LoggerFactory.Create(logBuilder =>
+		private static readonly ILogger consoleLogger = LoggerFactory.Create(logBuilder =>
 		{
 			logBuilder.AddConsole();
 			logBuilder.AddDebug();
@@ -49,7 +49,7 @@ namespace VectorChat.ServerASPNET.Controllers
 				messages.Count
 			);
 
-			return Ok(JsonSerializer.Serialize(messages));
+			return Ok(messages);
 		}
 
 		/// <summary>
@@ -128,7 +128,7 @@ namespace VectorChat.ServerASPNET.Controllers
 
 			messages.Add(new Message() { Content = $"Hello, {_name}", FromID = "id0", Timestamp = DateTime.Now });
 
-			return Ok(JsonSerializer.Serialize($"Welcome, {_name}"));
+			return Ok($"Welcome, {_name}");
 		}
 
 		/// <summary>
@@ -155,7 +155,7 @@ namespace VectorChat.ServerASPNET.Controllers
 
 			messages.Add(new Message() { Content = $"Hello, {_name} from {_referer}!", FromID = "id0", Timestamp = DateTime.Now });
 
-			return Ok(JsonSerializer.Serialize($"Welcome, {_name} from {_referer}!"));
+			return Ok($"Welcome, {_name} from {_referer}!");
 		}
 
 		/// <summary>
