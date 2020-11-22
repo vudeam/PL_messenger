@@ -1,4 +1,5 @@
-using System;
+using System.IO;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -8,11 +9,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using VectorChat.Utilities;
+using VectorChat.Utilities.Credentials;
 
 namespace VectorChat.ServerASPNET
 {
 	public class Startup
 	{
+		private ILogger consoleLogger = LoggerFactory.Create(builder =>
+		{
+			builder.AddConsole();
+			builder.AddDebug();
+		}).CreateLogger<Startup>();
+
 		public IConfiguration Configuration { get; }
 
 		public Startup(IConfiguration _Configuration)
@@ -27,8 +35,6 @@ namespace VectorChat.ServerASPNET
 			{
 				options.SignIn.RequireConfirmedEmail = true;
 			});
-
-			return;
 		}
 
 		/// <summary>
@@ -52,7 +58,22 @@ namespace VectorChat.ServerASPNET
 				app.UseDeveloperExceptionPage();
 			}
 
-			lifetime.ApplicationStopping.Register(() => Console.WriteLine("Graceful stop"));
+			lifetime.ApplicationStopping.Register(() =>
+			{
+				consoleLogger.LogWarning("Saving files...");
+				if (Server.users.Count > 0)
+				{
+					FileWorker.SaveToFile<List<User>>(Path.Combine(Directory.GetCurrentDirectory(), "users.json"), Server.users);
+					consoleLogger.LogInformation($"Saved {Server.users.Count} User(-s)");
+				}
+				if (Server.accounts.Count > 0)
+				{
+					FileWorker.SaveToFile<Dictionary<string, string>>(Path.Combine(Directory.GetCurrentDirectory(), "accounts.json"), Server.accounts);
+					consoleLogger.LogInformation($"Saved {Server.accounts.Count} account(-s)");
+				}
+
+				consoleLogger.LogInformation("Finished saving files");
+			});
 
 			app.UseRouting();
 
@@ -74,8 +95,6 @@ namespace VectorChat.ServerASPNET
 					context.Request.Path
 				);
 			});
-
-			return;
 		}
 	}
 }
