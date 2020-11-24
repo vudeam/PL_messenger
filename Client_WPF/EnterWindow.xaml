@@ -1,0 +1,93 @@
+﻿<Window x:Class="VectorChat.Client_WPF.EnterWindow"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:local="clr-namespace:Client_WPF"
+		mc:Ignorable="d"
+		Title="Enter" ResizeMode="NoResize" Width="250" Height="380" WindowStartupLocation="CenterScreen"
+		KeyDown="Window_KeyDown">
+    <Window.Resources>
+        <Style x:Key="local_RoundedBorder" TargetType="Rectangle">
+            <Setter Property="Width" Value="200"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="RadiusX" Value="14"/>
+            <Setter Property="RadiusY" Value="14"/>
+            <Setter Property="Stroke" Value="#C6D2DE"/>
+        </Style>
+        <Style x:Key="local_RoundedBorderButton" BasedOn="{StaticResource local_RoundedBorder}" TargetType="Rectangle">
+            <Setter Property="Fill" Value="#C6D2DE"/>
+            <Setter Property="Stroke" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Fill" Value="#AEb8C3"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="local_Placeholder" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="DarkGray"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="27 5 5 5"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="local_TransparentTextBox" BasedOn="{StaticResource NoBordersTextBox}" TargetType="TextBox">
+            <Setter Property="Margin" Value="27 5 5 5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Background" Value="{x:Null}"/>
+            <Setter Property="Width" Value="180"/>
+            <Setter Property="Height" Value="18"/>
+        </Style>
+        <Style x:Key="local_TransparentPasswordBox" BasedOn="{StaticResource NoBordersPasswordBox}" TargetType="PasswordBox">
+            <Setter Property="Margin" Value="27 5 5 5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Background" Value="{x:Null}"/>
+            <Setter Property="Width" Value="180"/>
+            <Setter Property="Height" Value="18"/>
+        </Style>
+    </Window.Resources>
+    <Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="0.20*"/>
+			<RowDefinition Height="0.80*"/>
+		</Grid.RowDefinitions>
+		<TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" FontSize="30">
+			<Run Text="Vector" FontWeight="Bold" Foreground="#A0B4C8"/>
+			<Run Text="Chat" FontWeight="Light"/>
+		</TextBlock>
+		<StackPanel Grid.Row="1">
+			<Grid x:Name="loginGrid" Margin="5 15 5 5">
+				<Rectangle Style="{StaticResource local_RoundedBorder}"/>
+				<TextBlock Text="Login" Style="{StaticResource local_Placeholder}"/>
+                <TextBox Style="{DynamicResource local_TransparentTextBox}" x:Name="loginTextBox"
+						GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus"/>
+			</Grid>
+			<Grid x:Name="passGrid" Margin="5">
+				<Rectangle Style="{StaticResource local_RoundedBorder}"/>
+				<TextBlock Text="Password" Style="{StaticResource local_Placeholder}"/>
+                <PasswordBox Style="{DynamicResource local_TransparentPasswordBox}" x:Name="passwordPasswordBox"
+						GotFocus="PasswordBox_GotFocus" LostFocus="PasswordBox_LostFocus"/>
+			</Grid>
+			<Grid x:Name="repPassGrid" Margin="5" Opacity="0" IsEnabled="False">
+				<Rectangle Style="{StaticResource local_RoundedBorder}"/>
+				<TextBlock Text="Repeat password" Style="{StaticResource local_Placeholder}"/>
+                <PasswordBox Style="{DynamicResource local_TransparentPasswordBox}" x:Name="passwordAgainPasswordBox"
+						GotFocus="PasswordBox_GotFocus" LostFocus="PasswordBox_LostFocus"/>
+			</Grid>
+			<Grid x:Name="nicknameGrid" Margin="5" Opacity="0" IsEnabled="False">
+				<Rectangle Style="{StaticResource local_RoundedBorder}"/>
+				<TextBlock Text="Nickname" Style="{StaticResource local_Placeholder}"/>
+                <TextBox Style="{DynamicResource local_TransparentTextBox}" x:Name="nicknameTextBox"
+						 GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus"/>
+			</Grid>
+			<TextBlock x:Name="ErrorLabel" Text="Error" HorizontalAlignment="Center" FontSize="12" Opacity="0"/>
+            <Grid x:Name="authButtonGrid" Margin="0 10 0 3" MouseUp="EnterButton_MouseUp">
+                <Rectangle Style="{StaticResource local_RoundedBorderButton}"/>
+				<TextBlock Text="Log in" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="DemiBold"/>
+			</Grid>
+            <TextBlock x:Name="modeSwapLabel" Text="Sign up" HorizontalAlignment="Center"
+                       FontSize="9" Foreground="Gray" MouseUp="SwapButton_Click" FontWeight="DemiBold"/>
+        </StackPanel>
+	</Grid>
+</Window>

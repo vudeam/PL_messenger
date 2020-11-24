@@ -17,6 +17,7 @@ using System.Net;
 using System.IO;
 using System.Text.Json;
 using VectorChat.Utilities;
+using VectorChat.Utilities.Credentials;
 
 namespace VectorChat.Client_WPF
 {
@@ -28,6 +29,8 @@ namespace VectorChat.Client_WPF
 		private ClientConfig configInfo;
 		private int maxLines = 5;
 		private double messageTextBoxCellStartHeight;
+		private User CurrentUser;
+		private string CurrentToken;
 
 		public MainWindow()
 		{
@@ -55,13 +58,20 @@ namespace VectorChat.Client_WPF
 			}
 			else
 			{
-				configInfo = new ClientConfig(200, "http://localhost:5005");
+				configInfo = new ClientConfig(200, "http://localhost:8080", 540, 960);
 				File.WriteAllText(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json"), JsonSerializer.Serialize(configInfo));
 			}
-			
+
+			if (configInfo.mainWindowHeight > mainWindow.MinHeight && configInfo.mainWindowHeight < mainWindow.MaxHeight)
+				mainWindow.Height = configInfo.mainWindowHeight;
+			if (configInfo.mainWindowWidth > mainWindow.MinWidth && configInfo.mainWindowWidth < mainWindow.MaxWidth)
+				mainWindow.Width = configInfo.mainWindowWidth;
+
 			//Getting start information
 			messageTextBoxCellStartHeight = messageTextBoxCellHeight.Height.Value;
-			MessagesRequesing(); 
+			OpenEnterWindow();
+			MessagesRequesing();
+			
 		}
 
 		private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -89,7 +99,7 @@ namespace VectorChat.Client_WPF
 			}
 			if (!String.IsNullOrEmpty(messageTextBox.Text) && infoAvailable)
 			{
-				HttpWebRequest mesToServer = (HttpWebRequest)WebRequest.Create(configInfo.serverAddress + "/api/messages");
+				HttpWebRequest mesToServer = (HttpWebRequest)WebRequest.Create(configInfo.serverAddress + "/api/chat/messages");
 				mesToServer.Method = "POST";
 				mesToServer.ContentType = "application/json";
 				Message mes = new Message()
@@ -153,7 +163,6 @@ namespace VectorChat.Client_WPF
 			};
 			vertStack.Children.Add(nickname);
 
-
 			var rect = new Rectangle()
 			{
 				Fill = new SolidColorBrush(Color.FromRgb(180, 255, 200)),
@@ -161,10 +170,13 @@ namespace VectorChat.Client_WPF
 				RadiusY = 10,
 				Focusable = false
 			};
+			if (_msg.FromID == CurrentUser?.ToString())
+				rect.Fill = new SolidColorBrush(Color.FromRgb(138, 203, 193));
 			messageGrid.Children.Add(rect);
 
 			var tb = new TextBox()
 			{
+				Style = messageTextBox.Style,
 				TextWrapping = TextWrapping.Wrap,
 				Width = 240	,
 				Text = _msg.Content,
@@ -204,7 +216,23 @@ namespace VectorChat.Client_WPF
 					renderedMessageGrid.Height = tb.Height + 10;
 				}
 			}
-			(messagesArea.Items[messagesArea.Items.Count - 1] as Grid).Margin = new Thickness(15, 10, 100, 5);
+			(messagesArea.Items[messagesArea.Items.Count - 1] as Grid).Margin = new Thickness(15, 5, 100, 5);
+		}
+
+		private void OpenEnterWindow()
+        {
+			var enterWindow = new EnterWindow(configInfo);
+			if (enterWindow.ShowDialog() == true)
+			{
+				CurrentUser = enterWindow.session.Item1;
+				CurrentToken = enterWindow.session.Item2;
+				nicknameLabel.Content = CurrentUser.nickname;
+				idLabel.Content = "#" + CurrentUser.userID;
+			}
+			else
+			{
+				Application.Current.MainWindow.Close();
+			}
 		}
 
 		private void messageTextBox_GotFocus(object sender, RoutedEventArgs e)
@@ -218,5 +246,6 @@ namespace VectorChat.Client_WPF
 			if (string.IsNullOrEmpty(messageTextBox.Text))
 				enterSign.Opacity = 1;
 		}
+
 	}
 }
