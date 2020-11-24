@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Jdenticon-net" Version="2.2.1" />
+    <PackageReference Include="Jdenticon.Gdi" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Utilities\Utilities.csproj" />
   </ItemGroup>
 

@@ -18,6 +18,7 @@ using System.IO;
 using System.Text.Json;
 using VectorChat.Utilities;
 using VectorChat.Utilities.Credentials;
+using Jdenticon;
 
 namespace VectorChat.Client_WPF
 {
@@ -29,8 +30,8 @@ namespace VectorChat.Client_WPF
 		private ClientConfig configInfo;
 		private int maxLines = 5;
 		private double messageTextBoxCellStartHeight;
-		private User CurrentUser;
-		private string CurrentToken;
+		private User currentUser;
+		private string currentToken;
 
 		public MainWindow()
 		{
@@ -71,7 +72,11 @@ namespace VectorChat.Client_WPF
 			messageTextBoxCellStartHeight = messageTextBoxCellHeight.Height.Value;
 			OpenEnterWindow();
 			MessagesRequesing();
-			
+
+			Grid currentUserIcon = DrawRoundedIdenticon(50, Color.FromRgb(135, 163, 191), Color.FromRgb(88, 117, 158), currentUser?.ToString());
+			currentUserIcon.HorizontalAlignment = HorizontalAlignment.Right;
+
+			userInfoGrid.Children.Add(currentUserIcon);
 		}
 
 		private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -119,7 +124,7 @@ namespace VectorChat.Client_WPF
 				messageTextBox.Text = "";
 			}
 		}
- 
+
 		private void MessagesRequesing()
 		{
 			Message message1 = new Message()
@@ -151,6 +156,9 @@ namespace VectorChat.Client_WPF
 			var vertStack = new StackPanel();
 			var horizStack = new StackPanel();
 
+			mainGrid.ColumnDefinitions.Add(new ColumnDefinition());
+			mainGrid.ColumnDefinitions.Add(new ColumnDefinition());
+
 			vertStack.Orientation = Orientation.Vertical;
 			horizStack.Orientation = Orientation.Horizontal;
 
@@ -165,20 +173,20 @@ namespace VectorChat.Client_WPF
 
 			var rect = new Rectangle()
 			{
-				Fill = new SolidColorBrush(Color.FromRgb(180, 255, 200)),
+				Fill = new SolidColorBrush(Color.FromRgb(171, 202, 239)),
 				RadiusX = 10,
 				RadiusY = 10,
 				Focusable = false
 			};
-			if (_msg.FromID == CurrentUser?.ToString())
-				rect.Fill = new SolidColorBrush(Color.FromRgb(138, 203, 193));
+			if (_msg.FromID == currentUser?.ToString())
+				rect.Fill = new SolidColorBrush(Color.FromRgb(88, 117, 158));
 			messageGrid.Children.Add(rect);
 
 			var tb = new TextBox()
 			{
 				Style = messageTextBox.Style,
 				TextWrapping = TextWrapping.Wrap,
-				Width = 240	,
+				Width = 240,
 				Text = _msg.Content,
 				FontSize = 16,
 				Background = null,
@@ -198,12 +206,24 @@ namespace VectorChat.Client_WPF
 				Background = null,
 				BorderBrush = null
 			};
+
+			var icon = new Grid();
+			icon = DrawRoundedIdenticon(30, Colors.Transparent, Colors.Transparent, _msg.FromID);
+			icon.VerticalAlignment = VerticalAlignment.Bottom;
+			icon.HorizontalAlignment = HorizontalAlignment.Center;
+			icon.Margin = new Thickness(0, 0, 5, 0);
+
 			horizStack.Children.Add(time);
 			vertStack.Children.Add(horizStack);
+
+			Grid.SetColumn(icon, 0);
+			mainGrid.Children.Add(icon);			
+
+			Grid.SetColumn(vertStack, 1);
 			mainGrid.Children.Add(vertStack);
 
 			messagesArea.Items.Add(mainGrid);
-			var renderedMessageGrid = (((messagesArea.Items[^1] as Grid).Children[0] as StackPanel).Children[1] as StackPanel).Children[0] as Grid; //So it should.
+			var renderedMessageGrid = (((messagesArea.Items[^1] as Grid).Children[1] as StackPanel).Children[1] as StackPanel).Children[0] as Grid; //So it should.
 			foreach (var objects in renderedMessageGrid.Children)
 			{
 				if (objects.GetType().Equals(typeof(TextBox)))
@@ -220,14 +240,14 @@ namespace VectorChat.Client_WPF
 		}
 
 		private void OpenEnterWindow()
-        {
+		{
 			var enterWindow = new EnterWindow(configInfo);
 			if (enterWindow.ShowDialog() == true)
 			{
-				CurrentUser = enterWindow.session.Item1;
-				CurrentToken = enterWindow.session.Item2;
-				nicknameLabel.Content = CurrentUser.nickname;
-				idLabel.Content = "#" + CurrentUser.userID;
+				currentUser = enterWindow.session.Item1;
+				currentToken = enterWindow.session.Item2;
+				nicknameLabel.Content = currentUser.nickname;
+				idLabel.Content = "#" + currentUser.userID;
 			}
 			else
 			{
@@ -245,6 +265,59 @@ namespace VectorChat.Client_WPF
 		{
 			if (string.IsNullOrEmpty(messageTextBox.Text))
 				enterSign.Opacity = 1;
+		}
+
+		private Grid DrawRoundedIdenticon(uint size, Color maskColor, Color ringColor, string keyword)
+		{
+			var grid = new Grid();
+			var iconBrush = new ImageBrush(Bitmap2BitmapImage(Identicon.FromValue(keyword, (int)size).ToBitmap()));
+			var maskBrush = new RadialGradientBrush();
+			maskBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 0.99));
+			maskBrush.GradientStops.Add(new GradientStop(maskColor, 0.99));
+
+			var imageRect = new Rectangle()
+			{
+				Fill = iconBrush,
+				Width = size,
+				Height = size
+			};
+
+			var maskRect = new Rectangle()
+			{
+				Fill = maskBrush,
+				Width = size + 1,
+				Height = size + 1
+			};
+
+			var ring = new Ellipse()
+			{
+				Width = size + 2,
+				Height = size + 2,
+				Stroke = new SolidColorBrush(ringColor),
+				StrokeThickness = 3
+			};
+
+			grid.Children.Add(imageRect);
+			grid.Children.Add(maskRect);
+			grid.Children.Add(ring);
+
+			return grid;
+		}
+
+		private BitmapImage Bitmap2BitmapImage(System.Drawing.Bitmap bitmap)
+		{
+			using (MemoryStream memory = new MemoryStream())
+			{
+				bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
+				memory.Position = 0;
+				BitmapImage bitmapImage = new BitmapImage();
+				bitmapImage.BeginInit();
+				bitmapImage.StreamSource = memory;
+				bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+				bitmapImage.EndInit();
+
+				return bitmapImage;
+			}
 		}
 
 	}

@@ -78,12 +78,12 @@
 				</Button.ToolTip>
 			</Button>
 		</Grid>
-		<Grid Grid.Row="0" Grid.Column="0" Background="#FF87A3BF">
+		<Grid x:Name="userInfoGrid" Grid.Row="0" Grid.Column="0" Background="#FF87A3BF">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="80" />
 				<ColumnDefinition Width="1*" />
 			</Grid.ColumnDefinitions>
-			<Ellipse Height="60" Width="60" HorizontalAlignment="Right" Fill="#C6D2DE"/>
+			<Ellipse x:Name="onlineUserRing" Height="50" Width="50" HorizontalAlignment="Right" Fill="#C6D2DE"/>
 			<WrapPanel Grid.Column="1" Orientation="Horizontal" Grid.ColumnSpan="2" VerticalAlignment="Center">
 				<Label x:Name="nicknameLabel"
 			   Content="Nickname"
@@ -109,7 +109,7 @@
 				<ColumnDefinition Width="80" />
 				<ColumnDefinition Width="1*" />
 			</Grid.ColumnDefinitions>
-			<Ellipse Height="60" Width="60" HorizontalAlignment="Right" Fill="#00BAA6"></Ellipse>
+			<Ellipse Height="60" Width="60" HorizontalAlignment="Right" Fill="#58729E"></Ellipse>
 			<StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center">
 				<Label x:Name="groupNameLabel"
 			   Content="Group"
