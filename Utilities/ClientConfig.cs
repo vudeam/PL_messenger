@@ -10,11 +10,18 @@ namespace VectorChat.Utilities
 	[Serializable]
 	public struct ClientConfig
 	{
+		public ClientConfig(uint messageRequestTime, string serverAddress, int mainWindowHeight, int mainWindowWidth)
+		{
+			this.messageRequestTime = messageRequestTime;
+			this.serverAddress = serverAddress;
+			this.mainWindowHeight = mainWindowHeight;
+			this.mainWindowWidth = mainWindowWidth;
+		}
+
 		public uint messageRequestTime { get; set; }
 		public string serverAddress { get; set; }
-		public ClientConfig(uint _messageRequestTime, string _ServerAdress) {
-			messageRequestTime = _messageRequestTime;
-			serverAddress = _ServerAdress;
-		}
+		public int mainWindowHeight { get; set; }
+		public int mainWindowWidth { get; set; }
+
 	}
 }
