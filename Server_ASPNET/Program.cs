@@ -13,11 +13,18 @@ namespace VectorChat.ServerASPNET
 {
 	public class Server
 	{
-		private static ServerConfig config;
+		internal static ServerConfig config;
 		//internal static List<Account> accounts;
-		internal static List<User> users;
-		internal static Dictionary<string, string> accounts;
-		internal static Dictionary<string, User> loginUser;
+		//internal static List<User> users;
+		//internal static Dictionary<string, string> accounts;
+		//internal static Dictionary<string, User> loginUser;
+
+		/// <returns>
+		/// <list type="number">
+		/// <item><see cref="System.Tuple{T1, T2}.Item1"/> hash</item>
+		/// </list>
+		/// </returns>
+		internal static Dictionary<string, (string, User)> usersStorage;
 
 		private static readonly ILogger consoleLogger = LoggerFactory.Create(builder =>
 		{
@@ -29,18 +36,39 @@ namespace VectorChat.ServerASPNET
 		{
 			if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config.json")))
 			{
-				config = FileWorker.LoadFromFile<ServerConfig>(Path.Combine(Directory.GetCurrentDirectory(), "config.json"));
+				config = FileWorker.LoadFromFile<ServerConfig>(
+					Path.Combine(Directory.GetCurrentDirectory(),
+					"config.json"),
+					new System.Text.Json.JsonSerializerOptions()
+					{
+						PropertyNameCaseInsensitive = false,
+						WriteIndented = true
+					}
+				);
 			}
 			else
 			{
-				config = new ServerConfig() { Port = "8080" };
-				FileWorker.SaveToFile<ServerConfig>(Path.Combine(Directory.GetCurrentDirectory(), "config.json"), new ServerConfig() { Port = "8080" });
+				config = new ServerConfig() {
+					Port = "8080",
+					DataLoadSeconds = 3600,
+					EnableFileLogging = false
+				};
+				FileWorker.SaveToFile<ServerConfig>(
+					Path.Combine(Directory.GetCurrentDirectory(), "config.json"),
+					config,
+					new System.Text.Json.JsonSerializerOptions()
+					{
+						PropertyNameCaseInsensitive = false,
+						WriteIndented = true
+					}
+				);
 			}
 
 			//accounts = new List<Account>();
-			users = new List<User>();
-			accounts = new Dictionary<string, string>();
-			loginUser = new Dictionary<string, User>();
+			//users = new List<User>();
+			//accounts = new Dictionary<string, string>();
+			//loginUser = new Dictionary<string, User>();
+			usersStorage = new Dictionary<string, (string, User)>();
 
 			CreateHostBuilder(args).Build().Run();
 			Console.WriteLine(Environment.NewLine + "Press Enter to close this window...");

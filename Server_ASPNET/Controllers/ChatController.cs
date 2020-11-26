@@ -7,15 +7,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using VectorChat.Utilities;
+using VectorChat.Utilities.Credentials;
 
 namespace VectorChat.ServerASPNET.Controllers
 {
 	/// <summary>
-	/// Route: /api/chat
+	/// Route: <c>/api/chat</c>
 	/// </summary>
 	[Route("api/[controller]")]
 	[ApiController]
-	public class ChatController : Controller
+	public class ChatController : ControllerBase
 	{
 		private static readonly ILogger consoleLogger = LoggerFactory.Create(logBuilder =>
 		{
@@ -23,10 +24,62 @@ namespace VectorChat.ServerASPNET.Controllers
 			logBuilder.AddDebug();
 		}).CreateLogger<ChatController>();
 
-		//public static readonly ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "ChatLog.txt"));
+		private static readonly ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "ChatLog.log"));
 
-		public static List<Message> messages = new List<Message>();
+		/// <summary>
+		/// Get messages in the period from <paramref name="ts"/> to <see cref="DateTime.Now"/><br/>
+		/// Route: <c>GET messages/{nick}/{userID}/{ts}</c>
+		/// </summary>
+		[HttpGet("messages/{nick}/{uID}/{ts}")]
+		public IActionResult GetMessagesBerofeNow(string nick, uint uID, DateTime ts)
+		{
+			#region Logging
+			if (Server.config.EnableFileLogging)
+			{
+				fileLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
+					this.Request.Method,
+					this.Response.StatusCode,
+					this.Request.Path
+				);
+			}
+			consoleLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
+				this.Request.Method,
+				this.Response.StatusCode,
+				this.Request.Path
+			);
+			#endregion
 
+			return Ok("/* TODO */");
+		}
+
+		/// <summary>
+		/// Get <paramref name="count"/> previous messages from <paramref name="ts"/><br/>
+		/// Route: <c>GET messages/{nick}/{uID}/{ts}/{count}</c>
+		/// </summary>
+		[HttpGet("messages/{nick}/{uID}/{ts}/{count}")]
+		public IActionResult GetMessagesBeforeTs(string nick, uint uID, DateTime ts, int count)
+		{
+			#region Logging
+			if (Server.config.EnableFileLogging)
+			{
+				fileLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
+					this.Request.Method,
+					this.Response.StatusCode,
+					this.Request.Path
+				);
+			}
+			consoleLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
+				this.Request.Method,
+				this.Response.StatusCode,
+				this.Request.Path
+			);
+			#endregion
+			
+			return Ok("/* TODO */");
+		}
+
+		#region Old methods
+		/*
 		/// <summary>
 		/// GET messages
 		/// </summary>
@@ -182,5 +235,7 @@ namespace VectorChat.ServerASPNET.Controllers
 
 			return Ok(value.ToString());
 		}
+		*/
+		#endregion
 	}
 }

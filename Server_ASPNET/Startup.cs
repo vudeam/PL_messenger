@@ -21,12 +21,7 @@ namespace VectorChat.ServerASPNET
 			builder.AddDebug();
 		}).CreateLogger<Startup>();
 
-		public IConfiguration Configuration { get; }
-
-		public Startup(IConfiguration _Configuration)
-		{
-			this.Configuration = _Configuration;
-		}
+		private ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "StartupLog.log"));
 
 		public void ConfigureServices(IServiceCollection services)
 		{
@@ -60,19 +55,21 @@ namespace VectorChat.ServerASPNET
 
 			lifetime.ApplicationStopping.Register(() =>
 			{
-				consoleLogger.LogWarning("Saving files...");
-				if (Server.users.Count > 0)
+				if (Server.config.EnableFileLogging)
 				{
-					FileWorker.SaveToFile<List<User>>(Path.Combine(Directory.GetCurrentDirectory(), "users.json"), Server.users);
-					consoleLogger.LogInformation($"Saved {Server.users.Count} User(-s)");
+					consoleLogger.LogWarning("Saving files...");
+					//if (Server.users.Count > 0)
+					//{
+					//	FileWorker.SaveToFile<List<User>>(Path.Combine(Directory.GetCurrentDirectory(), "users.json"), Server.users);
+					//	consoleLogger.LogInformation($"Saved {Server.users.Count} User(-s)");
+					//}
+					//if (Server.accounts.Count > 0)
+					//{
+					//	FileWorker.SaveToFile<Dictionary<string, string>>(Path.Combine(Directory.GetCurrentDirectory(), "accounts.json"), Server.accounts);
+					//	consoleLogger.LogInformation($"Saved {Server.accounts.Count} account(-s)");
+					//}
+					consoleLogger.LogInformation("Finished saving files");
 				}
-				if (Server.accounts.Count > 0)
-				{
-					FileWorker.SaveToFile<Dictionary<string, string>>(Path.Combine(Directory.GetCurrentDirectory(), "accounts.json"), Server.accounts);
-					consoleLogger.LogInformation($"Saved {Server.accounts.Count} account(-s)");
-				}
-
-				consoleLogger.LogInformation("Finished saving files");
 			});
 
 			app.UseRouting();
@@ -87,6 +84,16 @@ namespace VectorChat.ServerASPNET
 			{
 				context.Response.StatusCode = StatusCodes.Status404NotFound;
 				await context.Response.WriteAsync("<h1>404 Not Found</h1>");
+
+				#region Logging
+				if (Server.config.EnableFileLogging)
+				{
+					fileLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
+						context.Request.Method,
+						context.Response.StatusCode,
+						context.Request.Path
+					);
+				}
 				logger.Log(
 					LogLevel.Information,
 					"{0,6} {1} {2}",
@@ -94,6 +101,7 @@ namespace VectorChat.ServerASPNET
 					context.Response.StatusCode,
 					context.Request.Path
 				);
+				#endregion
 			});
 		}
 	}
