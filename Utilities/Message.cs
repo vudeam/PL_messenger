@@ -9,12 +9,13 @@ namespace VectorChat.Utilities
 	[Serializable]
 	public struct Message
 	{
-		public string Content { get; set; }
-		public string FromID { get; set; }
-		public DateTime Timestamp { get; set; }
+		public string content { get; set; }
+		public DateTime timestamp { get; set; }
+		public string fromID { get; set; }
+		public uint groupID { get; set; }
 
 		/// <returns>Formatted string which shows timestamp, user ID and message contents </returns>
-		public override string ToString() => $"[{this.Timestamp.ToLongTimeString()}] {this.FromID} : {this.Content}";
+		public override string ToString() => $"[{this.timestamp.ToLongTimeString()}] {this.fromID} : {this.content}";
 
 		public override Int32 GetHashCode()
 		{
@@ -31,9 +32,9 @@ namespace VectorChat.Utilities
 		public override bool Equals(object obj)
 		{
 			return obj is Message message &&
-				   Content == message.Content &&
-				   FromID == message.FromID &&
-				   Timestamp == message.Timestamp;
+				   content == message.content &&
+				   fromID == message.fromID &&
+				   timestamp == message.timestamp;
 		}
 	}
 }
