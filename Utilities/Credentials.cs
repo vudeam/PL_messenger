@@ -3,11 +3,12 @@ using System.Collections.Generic;
 
 namespace VectorChat.Utilities.Credentials
 {
+	[Serializable]
 	public class User
 	{
 		public string nickname { get; set; }
 		public uint userID { get; set; }
-		public List<uint> groupsIDs { get; set; }
+		public List<uint> groupsIDs { get; set; } // for client
 		public User() { this.groupsIDs = new List<uint>(); }
 		public User(string fullName) : this()
 		{
@@ -16,6 +17,10 @@ namespace VectorChat.Utilities.Credentials
 		}
 		/// <returns><c>nickname#userID</c></returns>
 		public override string ToString() => $"{this.nickname}#{this.userID}";
+		public static bool operator == (User _left, User _right) =>
+			(_left.nickname == _right.nickname) && (_right.userID == _left.userID);
+		public static bool operator != (User _left, User _right) =>
+			(_left.nickname != _right.nickname) || (_left.userID != _right.userID);
 	}
 
 	public class Account
@@ -45,6 +50,7 @@ namespace VectorChat.Utilities.Credentials
 		public List<User> members { get; set; }
 		public bool isPersonalGroup { get; set; }
 		public Group() { this.members = new List<User>(); }
+		public Group(uint _groupID, string _name) : this() { this.groupID = _groupID; this.name = _name; }
 		public override string ToString()
 		{
 			string output = this.isPersonalGroup ? "Personal group " : "Group ";
@@ -57,21 +63,23 @@ namespace VectorChat.Utilities.Credentials
 	/// <summary>
 	/// Sample struct of authentication response. Server authentication responds with <c>AuthResponse</c> serialized in JSON.
 	/// </summary>
-	/// <remarks>
-	/// Consists of:
-	/// <list type="number">
-	/// <item><see cref="VectorChat.Utilities.ApiErrCodes"/> - API error code (<c>0</c> - Success)</item>
-	/// <item>Default description for the exact error code</item>
-	/// <item><see cref="VectorChat.Utilities.Credentials.User"/> - responded <c>User</c> object</item>
-	/// <item>Token string for (possible) message encryption</item>
-	/// </list>
-	/// </remarks>
 	public struct AuthResponse
 	{
+		/// <summary>
+		/// <see cref="VectorChat.Utilities.ApiErrCodes"/> code for the request.
+		/// </summary>
+		/// <remarks>(<c>0</c> - Success)</remarks>
 		public ApiErrCodes code { get; set; }
+
+		/// <summary>Default description for the exact error code</summary>
 		public string defaultMessage { get; set; }
+
+		/// <summary>Responded <see cref="VectorChat.Utilities.Credentials.User"/> object</summary>
 		public User usr { get; set; }
+
+		/// <summary>Token string for (possible) message encryption</summary>
 		public string token { get; set; }
+
 		public override string ToString() =>
 			String.Format(
 				"Code {0} ('{1}')" + Environment.NewLine + "User {2}" + Environment.NewLine + "Token: {3}",

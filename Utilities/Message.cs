@@ -17,9 +17,9 @@ namespace VectorChat.Utilities
 		/// <returns>Formatted string which shows timestamp, user ID and message contents </returns>
 		public override string ToString() => $"[{this.timestamp.ToLongTimeString()}] {this.fromID} : {this.content}";
 
-		public override Int32 GetHashCode()
+		public override int GetHashCode()
 		{
-			Int32 hashBase = 15478363;
+			int hashBase = 15478363;
 			unchecked
 			{
 				foreach (PropertyInfo info in this.GetType().GetProperties())

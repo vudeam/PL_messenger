@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http;
@@ -30,12 +31,24 @@ namespace VectorChat.ServerASPNET.Controllers
 
 		private static PasswordHasher<Account> hasher = new PasswordHasher<Account>();
 
-		/// <summary>
-		/// POST signup
-		/// </summary>
+		private static readonly string[] welcomes = new string[]
+		{
+			"is here",
+			"is here with us",
+			"joined the group",
+			"joined us",
+			"joined the chat",
+			"enters here",
+			"lands in this chat",
+			"appeared"
+		};
+
+		private static readonly Random rng = new Random(DateTime.Now.Millisecond);
+
+		/// <remarks>Route: <c>POST signup</c></remarks>
 		[HttpPost("signup")]
 		[Produces("application/json")]
-		public IActionResult Register([FromBody] SignupRequest data)
+		public async Task<IActionResult> Register([FromBody] SignupRequest data)
 		{
 			#region Logging
 			if (Server.config.EnableFileLogging)
@@ -46,7 +59,7 @@ namespace VectorChat.ServerASPNET.Controllers
 					this.Request.Path
 				);
 			}
-			consoleLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
+			consoleLogger.Log(LogLevel.Debug, "{0,6} {1} {2}",
 				this.Request.Method,
 				this.Response.StatusCode,
 				this.Request.Path
@@ -66,16 +79,32 @@ namespace VectorChat.ServerASPNET.Controllers
 					data.acc.login,
 					(
 						hasher.HashPassword(data.acc, data.acc.password),
-						new User($"{data.nickname}#{ProvideUserID(new List<(string, User)>(Server.usersStorage.Values).ConvertAll(i => i.Item2), data.nickname)}") // **MAGIC**
+						new User($"{data.nickname}#{ProvideUserID(Server.UsersList, data.nickname)}")
 					)
 				))
 				{
 					response.code = ApiErrCodes.Success;
 					response.defaultMessage = "OK";
-					response.usr = Server.usersStorage[data.acc.login].Item2;
 
-					Console.WriteLine($"Added new User: {response.usr}");
-					Console.WriteLine($"{data.acc.login}:{Server.usersStorage[data.acc.login].Item1}{Environment.NewLine}");
+					Server.usersStorage[data.acc.login].user.groupsIDs.Add(0U); // bind group membership on User side
+					response.usr = Server.usersStorage[data.acc.login].user;
+
+					Server.groupsStorage[0U].group.members.Add(response.usr); // add registered user to the group chat
+					//Server.groups.Find(g => g.groupID == 0U).members.Add(response.usr); 1
+
+					consoleLogger.Log(LogLevel.Information, $"Added new User: {response.usr}");
+					consoleLogger.Log(LogLevel.Debug, $"{data.acc.login}:{Server.usersStorage[data.acc.login].passHash}{Environment.NewLine}");
+
+					// update data stored in file
+					FileWorker.SaveToFileAsync(
+						Path.Combine(Directory.GetCurrentDirectory(), "UsersStorage.json"),
+						Server.usersStorage
+					);
+				}
+				else
+				{
+					response.code = ApiErrCodes.Unknown;
+					response.defaultMessage = "Unknown error. Possible registration problem";
 				}
 			}
 
@@ -111,13 +140,10 @@ namespace VectorChat.ServerASPNET.Controllers
 			}
 			*/
 			#endregion
-
 			return Ok(response);
 		}
 
-		/// <summary>
-		/// POST login
-		/// </summary>
+		/// <remarks>Route: <c>POST login</c></remarks>
 		[HttpPost("login")]
 		[Produces("application/json")]
 		public IActionResult Login([FromBody] SignupRequest data)
@@ -131,7 +157,7 @@ namespace VectorChat.ServerASPNET.Controllers
 					this.Request.Path
 				);
 			}
-			consoleLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
+			consoleLogger.Log(LogLevel.Debug, "{0,6} {1} {2}",
 				this.Request.Method,
 				this.Response.StatusCode,
 				this.Request.Path
@@ -144,12 +170,23 @@ namespace VectorChat.ServerASPNET.Controllers
 			{
 				response.code = ApiErrCodes.PasswordIncorrect;
 				response.defaultMessage = "Incorrect password";
-				if (hasher.VerifyHashedPassword(data.acc, Server.usersStorage[data.acc.login].Item1, data.acc.password) == PasswordVerificationResult.Success) // password hash verified
+				if (hasher.VerifyHashedPassword(data.acc, Server.usersStorage[data.acc.login].passHash, data.acc.password) == PasswordVerificationResult.Success) // password hash verified
 				{
 					response.code = ApiErrCodes.Success;
 					response.defaultMessage = "OK";
-					response.usr = Server.usersStorage[data.acc.login].Item2;
+					response.usr = Server.usersStorage[data.acc.login].user;
 					response.token = BitConverter.ToString(ComputeHash(response.usr.ToString(), Encoding.UTF8)).Replace("-", String.Empty); // experimental as hash is not used by client
+
+					// add new Message to notify users about login
+					Server.groupsStorage[0U].messages.Add(
+						new Message()
+						{
+							content = $"[{response.usr}] {welcomes[rng.Next(welcomes.Length)]}",
+							fromID = response.usr.ToString(),
+							groupID = 0U,
+							timestamp = DateTime.Now
+						}
+					);
 				}
 			}
 			else // user is not registered
@@ -157,7 +194,7 @@ namespace VectorChat.ServerASPNET.Controllers
 				response.code = ApiErrCodes.LoginNotFound;
 				response.defaultMessage = "Account with this login does not exist.";
 			}
-
+			
 			return Ok(response);
 
 			#region Old
@@ -188,7 +225,7 @@ namespace VectorChat.ServerASPNET.Controllers
 		/// <summary>
 		/// Compute SHA512 hash from <paramref name="input"/>
 		/// </summary>
-		/// <remarks>This method is <c>[NonAction]</c>, so it can't be called by client.</remarks>
+		/// <remarks>This method is <c>[NonAction]</c>, so it can not be called by client.</remarks>
 		/// <param name="input">The string to compute hash from</param>
 		/// <param name="encoding">Encoding of the provided string</param>
 		[NonAction]
@@ -200,7 +237,7 @@ namespace VectorChat.ServerASPNET.Controllers
 		/// <summary>
 		/// Provides unique userID for the <paramref name="desiredNickname"/>. Does the selection from <paramref name="_users"/>.
 		/// </summary>
-		/// <remarks>This method is <c>[NonAction]</c>, so it can't be called by client.</remarks>
+		/// <remarks>This method is <c>[NonAction]</c>, so it can not be called by client.</remarks>
 		/// <param name="_users">Collection of users to search for unique nicknames from.</param>
 		/// <param name="desiredNickname">The nickname which is searched in <paramref name="_users"/></param>
 		/// <returns>Unique userID in the provided collection</returns>

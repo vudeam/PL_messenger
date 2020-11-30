@@ -41,12 +41,7 @@ namespace VectorChat.ServerASPNET
 		/// <item>Handler for default (or incorrect) route request</item>
 		/// </list>
 		/// </summary>
-		public void Configure(
-			IApplicationBuilder app,
-			IWebHostEnvironment env,
-			IHostApplicationLifetime lifetime,
-			ILogger<Startup> logger
-		)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime, ILogger<Startup> logger)
 		{
 			if (env.IsDevelopment())
 			{
@@ -95,7 +90,7 @@ namespace VectorChat.ServerASPNET
 					);
 				}
 				logger.Log(
-					LogLevel.Information,
+					LogLevel.Debug,
 					"{0,6} {1} {2}",
 					context.Request.Method,
 					context.Response.StatusCode,

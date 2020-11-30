@@ -30,6 +30,13 @@
 		PasswordIncorrect,
 
 		/// <summary>
+		/// <see cref="VectorChat.Utilities.Credentials.Group.groupID"/> specified in the 
+		/// recieved <see cref="VectorChat.Utilities.Message"/> is not avalable.<br/>
+		/// The default message for this code is "Target group is unavailable."
+		/// </summary>
+		GroupUnavailable,
+
+		/// <summary>
 		/// An unknown error occured which can not be described by existing error codes<br/>
 		/// The default message for this code is "Unknown error."
 		/// </summary>

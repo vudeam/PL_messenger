@@ -19,12 +19,17 @@ namespace VectorChat.ServerASPNET
 		//internal static Dictionary<string, string> accounts;
 		//internal static Dictionary<string, User> loginUser;
 
-		/// <returns>
-		/// <list type="number">
-		/// <item><see cref="System.Tuple{T1, T2}.Item1"/> hash</item>
-		/// </list>
-		/// </returns>
-		internal static Dictionary<string, (string, User)> usersStorage;
+		/// <summary>login -> (password hash, <see cref="VectorChat.Utilities.Credentials.User"/>)</summary>
+		internal static Dictionary<string, (string passHash, User user)> usersStorage;
+
+		/// <summary>groupID -> (<see cref="VectorChat.Utilities.Credentials.Group"/>, List of group messages)</summary>
+		internal static Dictionary<uint, (Group group, List<Message> messages)> groupsStorage;
+		//internal static List<Group> groups;
+
+		/// <summary>
+		/// Gets List of <see cref="VectorChat.Utilities.Credentials.User"/> convereted from <see cref="VectorChat.ServerASPNET.groupsStorage"/>
+		/// </summary>
+		internal static List<User> UsersList { get => new List<(string, User)>(usersStorage.Values).ConvertAll(i => i.Item2); }
 
 		private static readonly ILogger consoleLogger = LoggerFactory.Create(builder =>
 		{
@@ -34,47 +39,54 @@ namespace VectorChat.ServerASPNET
 
 		public static void Main(string[] args)
 		{
-			if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config.json")))
-			{
-				config = FileWorker.LoadFromFile<ServerConfig>(
-					Path.Combine(Directory.GetCurrentDirectory(),
-					"config.json"),
-					new System.Text.Json.JsonSerializerOptions()
-					{
-						PropertyNameCaseInsensitive = false,
-						WriteIndented = true
-					}
-				);
-			}
-			else
-			{
-				config = new ServerConfig() {
-					Port = "8080",
-					DataLoadSeconds = 3600,
-					EnableFileLogging = false
-				};
-				FileWorker.SaveToFile<ServerConfig>(
-					Path.Combine(Directory.GetCurrentDirectory(), "config.json"),
-					config,
-					new System.Text.Json.JsonSerializerOptions()
-					{
-						PropertyNameCaseInsensitive = false,
-						WriteIndented = true
-					}
-				);
-			}
+			LoadConfig();
 
-			//accounts = new List<Account>();
-			//users = new List<User>();
-			//accounts = new Dictionary<string, string>();
-			//loginUser = new Dictionary<string, User>();
 			usersStorage = new Dictionary<string, (string, User)>();
+			groupsStorage = new Dictionary<uint, (Group, List<Message>)>();
+
+			// Hardcode exactly one Group with ID = 0 (gloal group chat)
+			groupsStorage.Add(
+				0U,
+				(new Group(0U, "VectorChat") { isPersonalGroup = false, members = new List<User>() }, new List<Message>())
+			);
+			// ---------------------------------------------------------
 
 			CreateHostBuilder(args).Build().Run();
+
 			Console.WriteLine(Environment.NewLine + "Press Enter to close this window...");
 			Console.ReadLine();
 
 			return;
+		}
+
+		/// <summary>
+		/// Checks if specified <paramref name="_usr"/> is registered on the <see cref="VectorChat.ServerASPNET.Server"/> 
+		/// (is added to the List of registered Users)
+		/// </summary>
+		internal static bool CheckUserRegistration(User _usr) => UsersList.Exists(u => u == _usr);
+
+		private static void LoadConfig()
+		{
+			if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config.json")))
+			{
+				config = FileWorker.LoadFromFile<ServerConfig>(
+					Path.Combine(Directory.GetCurrentDirectory(),
+					"config.json")
+				);
+			}
+			else
+			{
+				config = new ServerConfig() // default config
+				{
+					Port = "8080",
+					//DataLoadSeconds = 3600,
+					EnableFileLogging = false
+				};
+				FileWorker.SaveToFile(
+					Path.Combine(Directory.GetCurrentDirectory(), "config.json"),
+					config
+				);
+			}
 		}
 
 		public static IHostBuilder CreateHostBuilder(string[] args) =>
