@@ -19,6 +19,7 @@ using System.Text.Json;
 using VectorChat.Utilities;
 using VectorChat.Utilities.Credentials;
 using Jdenticon;
+using VectorChat.Utilities.ClientRequests;
 
 namespace VectorChat.Client_WPF
 {
@@ -32,6 +33,7 @@ namespace VectorChat.Client_WPF
 		private double messageTextBoxCellStartHeight;
 		private User currentUser;
 		private string currentToken;
+		private uint currentGroupID = 0;
 
 		public MainWindow()
 		{
@@ -104,23 +106,14 @@ namespace VectorChat.Client_WPF
 			}
 			if (!String.IsNullOrEmpty(messageTextBox.Text) && infoAvailable)
 			{
-				HttpWebRequest mesToServer = (HttpWebRequest)WebRequest.Create(configInfo.serverAddress + "/api/chat/messages");
-				mesToServer.Method = "POST";
-				mesToServer.ContentType = "application/json";
 				Message mes = new Message()
 				{
-					Content = messageTextBox.Text,
-					Timestamp = DateTime.Now,
-					FromID = "0"
+					content = messageTextBox.Text,
+					timestamp = DateTime.Now,
+					fromID = currentUser.ToString(),
+					groupID = currentGroupID
 				};
-				using (StreamWriter stream = new StreamWriter(mesToServer.GetRequestStream()))
-				{
-					stream.Write(JsonSerializer.Serialize(mes));
-				}
-				mesToServer.Proxy = null;
-				using (var response = (HttpWebResponse)mesToServer.GetResponse())
-				{
-				}
+				ClientRequests.PostRequest(configInfo.serverAddress, mes);
 				messageTextBox.Text = "";
 			}
 		}
@@ -129,15 +122,17 @@ namespace VectorChat.Client_WPF
 		{
 			Message message1 = new Message()
 			{
-				Content = "Test message 1",
-				FromID = "TestUser #1",
-				Timestamp = DateTime.Now
+				content = "Test message 1",
+				fromID = "TestUser #1",
+				timestamp = DateTime.Now,
+				groupID = 0
 			};
 			Message message2 = new Message()
 			{
-				Content = "Test message 2",
-				FromID = "TestUser #2",
-				Timestamp = DateTime.Now
+				content = "Test message 2",
+				fromID = "TestUser #2",
+				timestamp = DateTime.Now,
+				groupID = 0
 			};
 
 			BuildMessageBubble(messagesList, message1);
@@ -164,7 +159,7 @@ namespace VectorChat.Client_WPF
 
 			var nickname = new Label()
 			{
-				Content = _msg.FromID,
+				Content = _msg.fromID,
 				FontSize = 14,
 				Background = null,
 				BorderBrush = null
@@ -178,7 +173,7 @@ namespace VectorChat.Client_WPF
 				RadiusY = 10,
 				Focusable = false
 			};
-			if (_msg.FromID == currentUser?.ToString())
+			if (_msg.fromID == currentUser?.ToString())
 				rect.Fill = new SolidColorBrush(Color.FromRgb(88, 117, 158));
 			messageGrid.Children.Add(rect);
 
@@ -187,7 +182,7 @@ namespace VectorChat.Client_WPF
 				Style = messageTextBox.Style,
 				TextWrapping = TextWrapping.Wrap,
 				Width = 240,
-				Text = _msg.Content,
+				Text = _msg.content,
 				FontSize = 16,
 				Background = null,
 				BorderBrush = null,
@@ -198,7 +193,7 @@ namespace VectorChat.Client_WPF
 
 			var time = new Label()
 			{
-				Content = _msg.Timestamp.ToShortTimeString(),
+				Content = _msg.timestamp.ToShortTimeString(),
 				FontSize = 14,
 				VerticalAlignment = VerticalAlignment.Bottom,
 				Margin = new Thickness(0, 0, 5, 0),
@@ -208,7 +203,7 @@ namespace VectorChat.Client_WPF
 			};
 
 			var icon = new Grid();
-			icon = DrawRoundedIdenticon(30, Colors.Transparent, Colors.Transparent, _msg.FromID);
+			icon = DrawRoundedIdenticon(30, Colors.Transparent, Colors.Transparent, _msg.fromID);
 			icon.VerticalAlignment = VerticalAlignment.Bottom;
 			icon.HorizontalAlignment = HorizontalAlignment.Center;
 			icon.Margin = new Thickness(0, 0, 5, 0);
@@ -221,7 +216,6 @@ namespace VectorChat.Client_WPF
 
 			Grid.SetColumn(vertStack, 1);
 			mainGrid.Children.Add(vertStack);
-
 			messagesArea.Items.Add(mainGrid);
 			var renderedMessageGrid = (((messagesArea.Items[^1] as Grid).Children[1] as StackPanel).Children[1] as StackPanel).Children[0] as Grid; //So it should.
 			foreach (var objects in renderedMessageGrid.Children)

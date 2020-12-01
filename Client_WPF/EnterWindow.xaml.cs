@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using VectorChat.Utilities;
 using VectorChat.Utilities.Credentials;
+using VectorChat.Utilities.ClientRequests;
 
 namespace VectorChat.Client_WPF
 {
@@ -148,53 +149,26 @@ namespace VectorChat.Client_WPF
 				modeSwapLabel.Text = "Sign up";
 			}
 		}
+
 		private AuthResponse AuthRequest(AuthRequestType type)
 		{
-			string _type = string.Empty;
 			string _nickname = string.Empty;
-			switch (type)
-			{
-				case AuthRequestType.login:
-					_type = "login";
-					_nickname = null;
-					break;
-				case AuthRequestType.signup:
-					_type = "signup";
-					_nickname = nicknameTextBox.Text;
-					break;
-				default:
-					break;
-			}
-			HttpWebRequest signupToServer = (HttpWebRequest)WebRequest.Create(configInfo.serverAddress + "/api/auth/" + type);
-			signupToServer.Method = "POST";
-			signupToServer.ContentType = "application/json";
+			if (type == AuthRequestType.login)
+				_nickname = null;
+			else
+				_nickname = nicknameTextBox.Text;
+
 			var newAccount = new SignupRequest()
 			{
+				nickname = _nickname,
 				acc = new Account()
 				{
 					login = loginTextBox.Text,
 					password = passwordPasswordBox.Password
-				},
-				nickname = _nickname
+				}
 			};
-			using (StreamWriter stream = new StreamWriter(signupToServer.GetRequestStream()))
-			{
-				stream.Write(JsonSerializer.Serialize(newAccount));
-			}
-			var webResponse = (HttpWebResponse)signupToServer.GetResponse();
-			AuthResponse response;
-			using (StreamReader stream = new StreamReader(webResponse.GetResponseStream()))
-			{
-				response = JsonSerializer.Deserialize<AuthResponse>(stream.ReadToEnd());
-			}
-			return response;
+			return ClientRequests.PostRequest(configInfo.serverAddress, type, newAccount);
 		}
-		
-		enum AuthRequestType
-		{
-			login,
-			signup
-		};
 
 		private void Window_KeyDown(object sender, KeyEventArgs e)
 		{
