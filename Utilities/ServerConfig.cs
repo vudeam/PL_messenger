@@ -20,7 +20,7 @@
 		*/
 
 		/// <summary>
-		/// Choose whether to create log file or not
+		/// Choose whether to create log files or not
 		/// </summary>
 		public bool EnableFileLogging { get; set; }
 	}

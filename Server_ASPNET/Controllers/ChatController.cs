@@ -38,10 +38,11 @@ namespace VectorChat.ServerASPNET.Controllers
 			#region Logging
 			if (Server.config.EnableFileLogging)
 			{
-				fileLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
-					this.Request.Method,
-					this.Response.StatusCode,
-					this.Request.Path
+				fileLogger.Log(LogLevel.Information, "[{0}] {1,6} {2} {3}",
+						DateTime.Now.ToString("HH:mm:ss dd.MM.yyyy"),
+						this.Request.Method,
+						this.Response.StatusCode,
+						this.Request.Path
 				);
 			}
 			consoleLogger.Log(LogLevel.Debug, "{0,6} {1} {2}",
@@ -61,7 +62,7 @@ namespace VectorChat.ServerASPNET.Controllers
 				{
 					// SELECT messages with Timestamp less than {ts}
 					var messages = from msg in Server.groupsStorage[gID].messages
-								   where msg.timestamp >= ts
+								   where msg.timestamp > ts
 								   orderby msg.timestamp
 								   select msg;
 
@@ -131,10 +132,11 @@ namespace VectorChat.ServerASPNET.Controllers
 			#region Logging
 			if (Server.config.EnableFileLogging)
 			{
-				fileLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
-					this.Request.Method,
-					this.Response.StatusCode,
-					this.Request.Path
+				fileLogger.Log(LogLevel.Information, "[{0}] {1,6} {2} {3}",
+						DateTime.Now.ToString("HH:mm:ss dd.MM.yyyy"),
+						this.Request.Method,
+						this.Response.StatusCode,
+						this.Request.Path
 				);
 			}
 			consoleLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
@@ -164,10 +166,11 @@ namespace VectorChat.ServerASPNET.Controllers
 			#region Logging
 			if (Server.config.EnableFileLogging)
 			{
-				fileLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
-					this.Request.Method,
-					this.Response.StatusCode,
-					this.Request.Path
+				fileLogger.Log(LogLevel.Information, "[{0}] {1,6} {2} {3}",
+						DateTime.Now.ToString("HH:mm:ss dd.MM.yyyy"),
+						this.Request.Method,
+						this.Response.StatusCode,
+						this.Request.Path
 				);
 			}
 			consoleLogger.Log(LogLevel.Debug, "{0,6} {1} {2}",

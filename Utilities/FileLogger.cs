@@ -21,21 +21,33 @@ namespace VectorChat.Utilities
 
 		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception ex, Func<TState, Exception, string> formatter)
 		{
-			string logPrefix;
+			string logPrefix = "";
 			switch (logLevel)
 			{
 				case LogLevel.None:
 					break;
-				default:
-					if (formatter != null)
-					{
-						logPrefix = "[INFO]";
-						lock (_locker)
-						{
-							File.AppendAllText(this.logFilePath, $"{logPrefix} {formatter(state, ex)}{Environment.NewLine}", Encoding.UTF8);
-						}
-					}
+				case LogLevel.Critical:
+					logPrefix = "[CRIT]";
 					break;
+				case LogLevel.Error:
+					logPrefix = "[EROR]";
+					break;
+				case LogLevel.Warning:
+					logPrefix = "[WARN]";
+					break;
+				case LogLevel.Information:
+					logPrefix = "[INFO]";
+					break;
+				default:
+					logPrefix = String.Empty;
+					break;
+			}
+			if (formatter != null)
+			{
+				lock (_locker)
+				{
+					File.AppendAllText(this.logFilePath, $"{logPrefix} {formatter(state, ex)}{Environment.NewLine}", Encoding.UTF8);
+				}
 			}
 		}
 	}

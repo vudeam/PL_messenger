@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace VectorChat.Utilities.Credentials
 {
+#pragma warning disable CS0660, CS0661
 	[Serializable]
 	public class User
 	{
@@ -22,6 +23,7 @@ namespace VectorChat.Utilities.Credentials
 		public static bool operator != (User _left, User _right) =>
 			(_left.nickname != _right.nickname) || (_left.userID != _right.userID);
 	}
+#pragma warning restore CS0660, CS0661
 
 	public class Account
 	{

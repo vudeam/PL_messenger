@@ -50,21 +50,15 @@ namespace VectorChat.ServerASPNET
 
 			lifetime.ApplicationStopping.Register(() =>
 			{
-				if (Server.config.EnableFileLogging)
+				consoleLogger.Log(LogLevel.Warning, "Saving files...");
+
+				consoleLogger.Log(LogLevel.Warning, "Saving groups.json ...");
+				if (Server.GroupsList.Count > 0)
 				{
-					consoleLogger.LogWarning("Saving files...");
-					//if (Server.users.Count > 0)
-					//{
-					//	FileWorker.SaveToFile<List<User>>(Path.Combine(Directory.GetCurrentDirectory(), "users.json"), Server.users);
-					//	consoleLogger.LogInformation($"Saved {Server.users.Count} User(-s)");
-					//}
-					//if (Server.accounts.Count > 0)
-					//{
-					//	FileWorker.SaveToFile<Dictionary<string, string>>(Path.Combine(Directory.GetCurrentDirectory(), "accounts.json"), Server.accounts);
-					//	consoleLogger.LogInformation($"Saved {Server.accounts.Count} account(-s)");
-					//}
-					consoleLogger.LogInformation("Finished saving files");
+					FileWorker.SaveToFile(Path.Combine(Directory.GetCurrentDirectory(), "groups.json"), Server.GroupsList);
 				}
+					
+				consoleLogger.Log(LogLevel.Warning, "Finished saving files");
 			});
 
 			app.UseRouting();
@@ -83,13 +77,14 @@ namespace VectorChat.ServerASPNET
 				#region Logging
 				if (Server.config.EnableFileLogging)
 				{
-					fileLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
+					fileLogger.Log(LogLevel.Information, "[{0}] {1,6} {2} {3}",
+						System.DateTime.Now.ToString("HH:mm:ss dd.MM.yyyy"),
 						context.Request.Method,
 						context.Response.StatusCode,
 						context.Request.Path
 					);
 				}
-				logger.Log(
+				consoleLogger.Log(
 					LogLevel.Debug,
 					"{0,6} {1} {2}",
 					context.Request.Method,

@@ -14,6 +14,9 @@ namespace VectorChat.Utilities
 		public string fromID { get; set; }
 		public uint groupID { get; set; }
 
+		[NonSerialized]
+		public static readonly string NotificationLabel = "VectorChat.NotificationLabel";
+
 		/// <returns>Formatted string which shows timestamp, user ID and message contents </returns>
 		public override string ToString() => $"[{this.timestamp.ToLongTimeString()}] {this.fromID} : {this.content}";
 

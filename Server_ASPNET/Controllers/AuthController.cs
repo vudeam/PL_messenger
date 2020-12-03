@@ -53,10 +53,11 @@ namespace VectorChat.ServerASPNET.Controllers
 			#region Logging
 			if (Server.config.EnableFileLogging)
 			{
-				fileLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
-					this.Request.Method,
-					this.Response.StatusCode,
-					this.Request.Path
+				fileLogger.Log(LogLevel.Information, "[{0}] {1,6} {2} {3}",
+						DateTime.Now.ToString("HH:mm:ss dd.MM.yyyy"),
+						this.Request.Method,
+						this.Response.StatusCode,
+						this.Request.Path
 				);
 			}
 			consoleLogger.Log(LogLevel.Debug, "{0,6} {1} {2}",
@@ -88,6 +89,8 @@ namespace VectorChat.ServerASPNET.Controllers
 
 					Server.usersStorage[data.acc.login].user.groupsIDs.Add(0U); // bind group membership on User side
 					response.usr = Server.usersStorage[data.acc.login].user;
+					response.token = BitConverter.ToString(ComputeHash(response.usr.ToString(), Encoding.UTF8)).Replace("-", String.Empty); // experimental as hash is not used by client
+
 
 					Server.groupsStorage[0U].group.members.Add(response.usr); // add registered user to the group chat
 					//Server.groups.Find(g => g.groupID == 0U).members.Add(response.usr); 1
@@ -151,10 +154,11 @@ namespace VectorChat.ServerASPNET.Controllers
 			#region Logging
 			if (Server.config.EnableFileLogging)
 			{
-				fileLogger.Log(LogLevel.Information, "{0,6} {1} {2}",
-					this.Request.Method,
-					this.Response.StatusCode,
-					this.Request.Path
+				fileLogger.Log(LogLevel.Information, "[{0}] {1,6} {2} {3}",
+						DateTime.Now.ToString("HH:mm:ss dd.MM.yyyy"),
+						this.Request.Method,
+						this.Response.StatusCode,
+						this.Request.Path
 				);
 			}
 			consoleLogger.Log(LogLevel.Debug, "{0,6} {1} {2}",
@@ -181,8 +185,9 @@ namespace VectorChat.ServerASPNET.Controllers
 					Server.groupsStorage[0U].messages.Add(
 						new Message()
 						{
-							content = $"[{response.usr}] {welcomes[rng.Next(welcomes.Length)]}",
-							fromID = response.usr.ToString(),
+							content = $"{response.usr} {welcomes[rng.Next(welcomes.Length)]}",
+							// fromID = response.usr.ToString(),
+							fromID = Message.NotificationLabel,
 							groupID = 0U,
 							timestamp = DateTime.Now
 						}

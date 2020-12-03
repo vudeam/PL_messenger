@@ -17,11 +17,14 @@ namespace VectorChat.Utilities
 			return JsonConvert.DeserializeObject<TItem>(File.ReadAllText(path), settings);
 		}
 
+		public static TItem LoadFromFileIfExists<TItem>(string path, JsonSerializerSettings settings = null)
+		{
+			return File.Exists(path) ? FileWorker.LoadFromFile<TItem>(path, settings) : default(TItem);
+		}
+
 		public static async void SaveToFileAsync(string path, object item, Formatting options = Formatting.Indented)
 		{
-			System.Console.WriteLine("Writing to file async...");
 			await Task.Run(() => File.WriteAllTextAsync(path, JsonConvert.SerializeObject(item, options)));
-			System.Console.WriteLine("Finished writing to file");
 		}
 
 		public static void SaveToBinary(string path, object item, FileMode mode = FileMode.Append)

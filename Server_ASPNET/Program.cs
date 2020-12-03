@@ -14,10 +14,6 @@ namespace VectorChat.ServerASPNET
 	public class Server
 	{
 		internal static ServerConfig config;
-		//internal static List<Account> accounts;
-		//internal static List<User> users;
-		//internal static Dictionary<string, string> accounts;
-		//internal static Dictionary<string, User> loginUser;
 
 		/// <summary>login -> (password hash, <see cref="VectorChat.Utilities.Credentials.User"/>)</summary>
 		internal static Dictionary<string, (string passHash, User user)> usersStorage;
@@ -29,7 +25,23 @@ namespace VectorChat.ServerASPNET
 		/// <summary>
 		/// Gets List of <see cref="VectorChat.Utilities.Credentials.User"/> convereted from <see cref="VectorChat.ServerASPNET.groupsStorage"/>
 		/// </summary>
-		internal static List<User> UsersList { get => new List<(string, User)>(usersStorage.Values).ConvertAll(i => i.Item2); }
+		internal static List<User> UsersList{ get => new List<(string, User)>(usersStorage.Values).ConvertAll(i => i.Item2); }
+
+		/// <summary>
+		/// Gets List of <see cref="VectorChat.Utilities.Credentials.Group"/> convereted from <see cref="VectorChat.ServerASPNET.groupsStorage"/>
+		/// </summary>
+		internal static List<Group> GroupsList
+		{
+			get => new List<(Group, List<Message>)>(groupsStorage.Values).ConvertAll(i => i.Item1);
+			set
+			{
+				groupsStorage = new Dictionary<uint, (Group, List<Message>)>();
+				foreach (var item in value)
+				{
+					groupsStorage[item.groupID] = (item, new List<Message>());
+				}
+			}
+		}
 
 		private static readonly ILogger consoleLogger = LoggerFactory.Create(builder =>
 		{
@@ -39,17 +51,41 @@ namespace VectorChat.ServerASPNET
 
 		public static void Main(string[] args)
 		{
-			LoadConfig();
+			try
+			{
+				consoleLogger.Log(LogLevel.Warning, "Loading config.json ...");
+				LoadConfig();
 
-			usersStorage = new Dictionary<string, (string, User)>();
-			groupsStorage = new Dictionary<uint, (Group, List<Message>)>();
+				consoleLogger.Log(LogLevel.Warning, "Loading Users storage ...");
+				LoadUsersStorage(Path.Combine(Directory.GetCurrentDirectory(), "usersStorage.json"));
 
-			// Hardcode exactly one Group with ID = 0 (gloal group chat)
-			groupsStorage.Add(
-				0U,
-				(new Group(0U, "VectorChat") { isPersonalGroup = false, members = new List<User>() }, new List<Message>())
-			);
-			// ---------------------------------------------------------
+				consoleLogger.Log(LogLevel.Warning, "Loading list of Groups ...");
+				if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "groups.json")))
+				{
+					GroupsList = FileWorker.LoadFromFile<List<Group>>("groups.json");
+				}
+				else
+				{
+					groupsStorage = new Dictionary<uint, (Group, List<Message>)>();
+					// Hardcode one Group with ID = 0 (gloal group chat)
+					groupsStorage.Add(
+						0U,
+						(new Group(0U, "VectorChat") { isPersonalGroup = false, members = new List<User>() }, new List<Message>())
+					);
+					//--------------------------------------------------
+				}
+
+				consoleLogger.Log(LogLevel.Warning, "Loading messages storage...");
+				Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage"));
+				foreach (uint gID in groupsStorage.Keys)
+				{
+					Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{gID}"));
+				}
+			}
+			catch (Exception ex)
+			{
+				consoleLogger.Log(LogLevel.Critical, ex, "Failed to load initial files");
+			}
 
 			CreateHostBuilder(args).Build().Run();
 
@@ -65,6 +101,18 @@ namespace VectorChat.ServerASPNET
 		/// </summary>
 		internal static bool CheckUserRegistration(User _usr) => UsersList.Exists(u => u == _usr);
 
+		private static void LoadUsersStorage(string path)
+		{
+			if (File.Exists(path))
+			{
+				usersStorage = FileWorker.LoadFromFile<Dictionary<string, (string, User)>>(path);
+			}
+			else // load failed, reset storage
+			{
+				usersStorage = new Dictionary<string, (string, User)>();
+			}
+		}
+		
 		private static void LoadConfig()
 		{
 			if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config.json")))
@@ -76,6 +124,7 @@ namespace VectorChat.ServerASPNET
 			}
 			else
 			{
+				consoleLogger.Log(LogLevel.Warning, "config.json not found. loading default config...");
 				config = new ServerConfig() // default config
 				{
 					Port = "8080",
