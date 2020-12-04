@@ -19,13 +19,19 @@ namespace VectorChat.ServerASPNET.Controllers
 	[ApiController]
 	public class ChatController : ControllerBase
 	{
+		/// <summary>
+		/// Triggered by <see cref="VectorChat.ServerASPNET.Controllers.ChatController.PostMessage(Message)"/> 
+		/// when a new message is added
+		/// </summary>
+		private static event MessageEventHandler MessageAdded = OnMessageAdded;
+
 		private static readonly ILogger consoleLogger = LoggerFactory.Create(logBuilder =>
 		{
 			logBuilder.AddConsole();
 			logBuilder.AddDebug();
 		}).CreateLogger<ChatController>();
 
-		private static readonly ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "ChatLog.log"));
+		private static readonly ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "logs", "ChatLog.log"));
 
 		/// <summary>
 		/// Get messages in the period from <paramref name="ts"/> to <see cref="DateTime.Now"/><br/>
@@ -67,8 +73,9 @@ namespace VectorChat.ServerASPNET.Controllers
 								   select msg;
 
 					response = new List<Message>(messages);
-					Console.WriteLine("selected messages:");
-					foreach (var item in response) Console.WriteLine(item);
+
+					//Console.WriteLine("selected messages:");
+					//foreach (var item in response) Console.WriteLine(item);
 				}
 			}
 			
@@ -104,16 +111,17 @@ namespace VectorChat.ServerASPNET.Controllers
 
 			if (Server.groupsStorage.ContainsKey(gID)) // found requested group
 			{
-				if (Server.groupsStorage[gID].group.members.Exists(u => u == new User($"{nick}#{uID}")))
+				if (Server.groupsStorage[gID].group.members.Exists(u => u == new User($"{nick}#{uID}"))) // found group member
 				{
 					var messages = (from msg in Server.groupsStorage[gID].messages
 									where msg.timestamp <= ts
 									orderby msg.timestamp
 									select msg)
-									.Take(count);
+									.TakeLast(count);
 					response = new List<Message>(messages);
-					Console.WriteLine($"Selected {response.Count} messages:");
-					foreach (var item in response) Console.WriteLine(item);
+
+					//Console.WriteLine($"Selected {response.Count} messages:");
+					//foreach (var item in response) Console.WriteLine(item);
 				}
 			}
 
@@ -152,6 +160,23 @@ namespace VectorChat.ServerASPNET.Controllers
 			}
 
 			return new List<Message>();
+		}
+
+		/// <summary>
+		/// Get list of <see cref="VectorChat.Utilities.Credentials.Group"/> 
+		/// which contain specified <see cref="VectorChat.Utilities.Credentials.User"/> as a member
+		/// </summary>
+		/// <remarks>Route: <c>GET groups/{nick}/{uID}</c></remarks>
+		[HttpGet("groups/{nick}/{uID}")]
+		[Produces("application/json")]
+		public IEnumerable<Group> GetGroupsForUser(string nick, uint uID)
+		{
+			var response = from g in Server.GroupsList
+						   where g.members.Exists(u => u == new User(nick, uID))
+						   orderby g.groupID ascending
+						   select g;
+
+			return response;
 		}
 
 		/// <summary>
@@ -198,39 +223,13 @@ namespace VectorChat.ServerASPNET.Controllers
 				if (Server.groupsStorage[msg.groupID].group.members.Exists(u => u == new User(msg.fromID)))
 				{
 					Server.groupsStorage[msg.groupID].messages.Add(msg);
-					consoleLogger.LogInformation(Server.groupsStorage[msg.groupID].messages[^1].ToString());
+					//consoleLogger.LogInformation(Server.groupsStorage[msg.groupID].messages[^1].ToString());
 
 					response.code = ApiErrCodes.Success;
 					response.defaultMessage = "OK";
 					response.usr = new User(msg.fromID);
 				}
 			}
-
-			/*
-			if (Server.messagesStorage.ContainsKey(msg.groupID)) // target group exists
-			{
-				// user belongs to the target group
-				if (Server.groups.Exists(g => g.groupID == msg.groupID) && Server.groups.Find(g => g.groupID == msg.groupID).members.Exists(u => u.ToString() == msg.fromID))
-				{
-					Server.messagesStorage[msg.groupID].Add(msg);
-					consoleLogger.LogInformation(msg.ToString());
-
-					response.code = ApiErrCodes.Success;
-					response.defaultMessage = "OK";
-					response.usr = new User(msg.fromID);
-				}
-				else
-				{
-					response.code = ApiErrCodes.GroupUnavailable;
-					response.defaultMessage = "Target group is unavailable.";
-				}
-			}
-			else
-			{
-				response.code = ApiErrCodes.GroupUnavailable;
-				response.defaultMessage = "Target group is unavailable.";
-			}
-			*/
 
 			return Ok(response);
 		}
@@ -249,8 +248,30 @@ namespace VectorChat.ServerASPNET.Controllers
 				new Message() { content = "Hello", fromID = "o#0", timestamp = DateTime.Now, groupID = 0U }
 			);
 
+			MessageAdded(this, new MessageEventArgs() { TotalMessagesCount = 111 });
+
 			return Ok("Hello there, General Kenobi");
 		}
+
+		#region Non-Action methods
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <remarks>This method is <c>[NonAction]</c>, so it can not be called by client.</remarks>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		[NonAction]
+		public static void OnMessageAdded(object sender, MessageEventArgs args)
+		{
+			// Console.WriteLine((sender as ChatController).Request.Path + args.TotalMessagesCount);
+
+			// if less than a limit
+			if ((args.TotalMessagesCount <= Server.config.StoredMessagesLimit) || (Server.config.StoredMessagesLimit < 0)) return;
+
+			// upload all messages to a file
+
+		}
+		#endregion
 
 		#region Old methods
 		/*

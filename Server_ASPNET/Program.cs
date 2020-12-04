@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
@@ -20,15 +21,21 @@ namespace VectorChat.ServerASPNET
 
 		/// <summary>groupID -> (<see cref="VectorChat.Utilities.Credentials.Group"/>, List of group messages)</summary>
 		internal static Dictionary<uint, (Group group, List<Message> messages)> groupsStorage;
-		//internal static List<Group> groups;
 
 		/// <summary>
-		/// Gets List of <see cref="VectorChat.Utilities.Credentials.User"/> convereted from <see cref="VectorChat.ServerASPNET.groupsStorage"/>
+		/// Gets List of <see cref="VectorChat.Utilities.Credentials.User"/> 
+		/// convereted from <see cref="VectorChat.ServerASPNET.groupsStorage"/>
 		/// </summary>
-		internal static List<User> UsersList{ get => new List<(string, User)>(usersStorage.Values).ConvertAll(i => i.Item2); }
+		internal static List<User> UsersList
+		{
+			get => new List<(string, User)>(usersStorage.Values)
+				.ConvertAll(i => i.Item2);
+		}
 
 		/// <summary>
-		/// Gets List of <see cref="VectorChat.Utilities.Credentials.Group"/> convereted from <see cref="VectorChat.ServerASPNET.groupsStorage"/>
+		/// Gets or sets List of 
+		/// <see cref="VectorChat.Utilities.Credentials.Group"/> 
+		/// convereted from <see cref="VectorChat.ServerASPNET.groupsStorage"/>
 		/// </summary>
 		internal static List<Group> GroupsList
 		{
@@ -41,6 +48,17 @@ namespace VectorChat.ServerASPNET
 					groupsStorage[item.groupID] = (item, new List<Message>());
 				}
 			}
+		}
+
+		/// <summary>
+		/// Gets total amount of all items of <see cref="VectorChat.Utilities.Message"/> 
+		/// stored in <see cref="VectorChat.ServerASPNET.Server.groupsStorage"/>
+		/// </summary>
+		internal static int AllMessagesCount
+		{
+			get => new List<(Group, List<Message>)>(groupsStorage.Values)
+				.ConvertAll(i => i.Item2)
+				.Sum(list => list.Count);
 		}
 
 		private static readonly ILogger consoleLogger = LoggerFactory.Create(builder =>
@@ -121,6 +139,10 @@ namespace VectorChat.ServerASPNET
 					Path.Combine(Directory.GetCurrentDirectory(),
 					"config.json")
 				);
+				if (config.EnableFileLogging)
+				{
+					Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "logs"));
+				}
 			}
 			else
 			{
@@ -129,8 +151,13 @@ namespace VectorChat.ServerASPNET
 				{
 					Port = "8080",
 					//DataLoadSeconds = 3600,
-					EnableFileLogging = false
+					EnableFileLogging = false,
+					StoredMessagesLimit = 1000
 				};
+				if (config.EnableFileLogging)
+				{
+					Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "logs"));
+				}
 				FileWorker.SaveToFile(
 					Path.Combine(Directory.GetCurrentDirectory(), "config.json"),
 					config

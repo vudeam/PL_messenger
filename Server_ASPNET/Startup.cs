@@ -21,7 +21,7 @@ namespace VectorChat.ServerASPNET
 			builder.AddDebug();
 		}).CreateLogger<Startup>();
 
-		private ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "StartupLog.log"));
+		private ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "logs", "StartupLog.log"));
 
 		public void ConfigureServices(IServiceCollection services)
 		{

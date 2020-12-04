@@ -16,6 +16,11 @@ namespace VectorChat.Utilities.Credentials
 			this.nickname = fullName.Split('#', 2)[0];
 			this.userID = uint.Parse(fullName.Split('#', 2)[1]);
 		}
+		public User (string nick, uint uID) : this()
+		{
+			this.nickname = nick;
+			this.userID = uID;
+		}
 		/// <returns><c>nickname#userID</c></returns>
 		public override string ToString() => $"{this.nickname}#{this.userID}";
 		public static bool operator == (User _left, User _right) =>

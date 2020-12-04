@@ -15,7 +15,10 @@ namespace VectorChat.Utilities
 		public uint groupID { get; set; }
 
 		[NonSerialized]
-		public static readonly string NotificationLabel = "VectorChat.NotificationLabel";
+		public static readonly string LoginNotification = "VectorChat.LoginNotofication";
+
+		[NonSerialized]
+		public static readonly string GroupCreationNotification = "VectorChat.GroupCreationNotofocation";
 
 		/// <returns>Formatted string which shows timestamp, user ID and message contents </returns>
 		public override string ToString() => $"[{this.timestamp.ToLongTimeString()}] {this.fromID} : {this.content}";
@@ -39,5 +42,15 @@ namespace VectorChat.Utilities
 				   fromID == message.fromID &&
 				   timestamp == message.timestamp;
 		}
+	}
+
+	public delegate void MessageEventHandler(object sender, MessageEventArgs args);
+
+	/// <summary>
+	/// Arguments for all <see cref="VectorChat.Utilities.Message"/> events
+	/// </summary>
+	public class MessageEventArgs
+	{
+		public int TotalMessagesCount { get; set; }
 	}
 }

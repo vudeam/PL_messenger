@@ -27,7 +27,7 @@ namespace VectorChat.ServerASPNET.Controllers
 			logBuilder.AddDebug();
 		}).CreateLogger<AuthController>();
 
-		public static readonly ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "AuthLog.log"));
+		public static readonly ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "logs", "AuthLog.log"));
 
 		private static PasswordHasher<Account> hasher = new PasswordHasher<Account>();
 
@@ -111,38 +111,6 @@ namespace VectorChat.ServerASPNET.Controllers
 				}
 			}
 
-			#region OLD
-			/*
-			if (Server.accounts.ContainsKey(data.acc.login)) // user already registered and tries again
-			{
-				response.code = ApiErrCodes.LoginTaken;
-				response.defaultMessage = "Registered account with the same login already exists.";
-			}
-			else
-			{
-				if (Server.accounts.TryAdd(data.acc.login, hasher.HashPassword(data.acc, data.acc.password))){
-					response.code = ApiErrCodes.Success;
-					response.defaultMessage = "OK.";
-					response.usr = new User()
-					{
-						nickname = data.nickname,
-						userID = ProvideUserID(Server.users, data.nickname)
-					};
-					Server.users.Add(response.usr);
-					Server.loginUser.Add(data.acc.login, response.usr);
-
-					Console.WriteLine($"Added new user: {response.usr}");
-					Console.WriteLine($"{data.acc.login}:{Server.accounts[data.acc.login]}");
-					Console.WriteLine($"{data.acc.login}:{Server.loginUser[data.acc.login]}");
-				}
-				else
-				{
-					response.code = ApiErrCodes.Unknown;
-					response.defaultMessage = "Unknown error. Possible registration problem.";
-				}
-			}
-			*/
-			#endregion
 			return Ok(response);
 		}
 
@@ -187,7 +155,7 @@ namespace VectorChat.ServerASPNET.Controllers
 						{
 							content = $"{response.usr} {welcomes[rng.Next(welcomes.Length)]}",
 							// fromID = response.usr.ToString(),
-							fromID = Message.NotificationLabel,
+							fromID = Message.LoginNotification,
 							groupID = 0U,
 							timestamp = DateTime.Now
 						}
@@ -201,29 +169,6 @@ namespace VectorChat.ServerASPNET.Controllers
 			}
 			
 			return Ok(response);
-
-			#region Old
-			/*
-			if (Server.accounts.ContainsKey(data.acc.login)) // found registered user
-			{
-				response.code = ApiErrCodes.PasswordIncorrect;
-				response.defaultMessage = "Incorrect password";
-				if (hasher.VerifyHashedPassword(data.acc, Server.accounts[data.acc.login], data.acc.password) == PasswordVerificationResult.Success){ // hash is correct
-					response.code = ApiErrCodes.Success;
-					response.defaultMessage = "OK";
-					response.usr = Server.loginUser[data.acc.login];
-					response.token = BitConverter.ToString(ComputeHash(response.usr.ToString(), Encoding.UTF8)).Replace("-", String.Empty); // experimental
-				}
-			}
-			else // user is not registered
-			{
-				response.code = ApiErrCodes.LoginNotFound;
-				response.defaultMessage = "Account with this login does not exist.";
-			}
-
-			return Ok(response);
-			*/
-			#endregion
 		}
 
 		#region Non-Action methods
