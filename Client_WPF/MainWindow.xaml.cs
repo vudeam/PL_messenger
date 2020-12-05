@@ -59,16 +59,17 @@ namespace VectorChat.Client_WPF
 			if (File.Exists(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json")))
 			{
 				configInfo = JsonSerializer.Deserialize<ClientConfig>(File.ReadAllText(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json")));
-				if (configInfo.mainWindowHeight > mainWindow.MinHeight && configInfo.mainWindowHeight < mainWindow.MaxHeight)
-					mainWindow.Height = configInfo.mainWindowHeight;
-				if (configInfo.mainWindowWidth > mainWindow.MinWidth && configInfo.mainWindowWidth < mainWindow.MaxWidth)
-					mainWindow.Width = configInfo.mainWindowWidth;
 			}
 			else
 			{
 				configInfo = new ClientConfig(200, "http://localhost:8080", 540, 960);
-				FileWorker.SaveToFile(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json"), configInfo);
+				File.WriteAllText(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json"), JsonSerializer.Serialize(configInfo));
 			}
+
+			if (configInfo.mainWindowHeight > mainWindow.MinHeight && configInfo.mainWindowHeight < mainWindow.MaxHeight)
+				mainWindow.Height = configInfo.mainWindowHeight;
+			if (configInfo.mainWindowWidth > mainWindow.MinWidth && configInfo.mainWindowWidth < mainWindow.MaxWidth)
+				mainWindow.Width = configInfo.mainWindowWidth;
 
 			messageTextBoxCellStartHeight = messageTextBoxCellHeight.Height.Value;
 			OpenEnterWindow();
