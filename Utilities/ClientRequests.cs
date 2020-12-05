@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Text.Json;
+using System.Collections.Generic;
 using VectorChat.Utilities.Credentials;
 
 namespace VectorChat.Utilities.ClientRequests
@@ -66,23 +65,31 @@ namespace VectorChat.Utilities.ClientRequests
 		/// <returns></returns>
 		public static List<Message> GetRequest(string serverAddress, string currentUser, uint currentID, uint groupID, DateTime timestamp)
 		{
-			string path = serverAddress + $"/api/chat/messages/{currentUser}/{currentID}/{groupID}/{timestamp}";
+			string path = serverAddress + $"/api/chat/messages/" +
+				$"{currentUser}/" +
+				$"{currentID}/" +
+				$"{groupID}/" +
+				$"{timestamp.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture)}";
 			return MessageListRequest(path);
 		}
 
 		/// <summary>
 		/// Sends a request to receive the passed number of messages from the passed timestamp to the past
 		/// </summary>
-		/// <param name="serverAddress"></param>
+		/// <param name="serverAddress">address of server</param>
 		/// <param name="currentUser"></param>
 		/// <param name="currentID"></param>
 		/// <param name="groupID"></param>
 		/// <param name="timestamp"></param>
-		/// <param name="messagesCount"></param>
+		/// <param name="messagesCount">Maximum number of messages requested</param>
 		/// <returns></returns>
 		public static List<Message> GetRequest(string serverAddress, string currentUser, uint currentID, uint groupID, DateTime timestamp, uint messagesCount)
 		{
-			string path = serverAddress + $"/api/chat/messages/{currentUser}/{currentID}/{groupID}/{timestamp}/{messagesCount}";
+			string path = serverAddress + $"/api/chat/messages/" +
+				$"{currentUser}/" +
+				$"{currentID}/" +
+				$"{groupID}/" +
+				$"{timestamp.ToUniversalTime().ToString("O",System.Globalization.CultureInfo.InvariantCulture)}/{messagesCount}";
 			return MessageListRequest(path);
 		}
 
