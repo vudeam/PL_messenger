@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Text;
-using System.Text.Json;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using System.Windows.Controls;
 using VectorChat.Utilities;
 using VectorChat.Utilities.Credentials;
 using VectorChat.Utilities.ClientRequests;
@@ -25,7 +14,7 @@ namespace VectorChat.Client_WPF
 	{
 		ClientConfig configInfo;
 
-		internal (User, string) session { get; private set; }
+		internal (User user, string token) session { get; private set; }
 
 		public EnterWindow(ClientConfig _config)
 		{
@@ -111,6 +100,7 @@ namespace VectorChat.Client_WPF
 				{
 					case ApiErrCodes.Success:
 						session = (response.usr, response.token);
+						AuthRequest(AuthRequestType.login);
 						this.DialogResult = true;
 						return;
 					case ApiErrCodes.LoginTaken:
@@ -152,7 +142,7 @@ namespace VectorChat.Client_WPF
 
 		private AuthResponse AuthRequest(AuthRequestType type)
 		{
-			string _nickname = string.Empty;
+			string _nickname;
 			if (type == AuthRequestType.login)
 				_nickname = null;
 			else

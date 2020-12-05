@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using VectorChat.Utilities.Credentials;
 
@@ -39,19 +40,22 @@ namespace VectorChat.Utilities.ClientRequests
 		/// </summary>
 		/// <param name="serverAddress"></param>
 		/// <param name="body"></param>
-		public static void PostRequest(string serverAddress, Message body)
+		public static async void PostRequest(string serverAddress, Message body)
 		{
-			HttpWebRequest signupToServer = WebRequest.CreateHttp(serverAddress + "/api/chat/messages");
-			signupToServer.Method = "POST";
-			signupToServer.ContentType = "application/json";
-			using (StreamWriter stream = new StreamWriter(signupToServer.GetRequestStream()))
+			await Task.Run(() =>
 			{
-				stream.Write(JsonSerializer.Serialize(body));
-			}
-			var webResponse = (HttpWebResponse)signupToServer.GetResponse();
-			using (StreamReader stream = new StreamReader(webResponse.GetResponseStream()))
-			{
-			}
+				HttpWebRequest signupToServer = WebRequest.CreateHttp(serverAddress + "/api/chat/messages");
+				signupToServer.Method = "POST";
+				signupToServer.ContentType = "application/json";
+				using (StreamWriter stream = new StreamWriter(signupToServer.GetRequestStream()))
+				{
+					stream.Write(JsonSerializer.Serialize(body));
+				}
+				var webResponse = (HttpWebResponse)signupToServer.GetResponse();
+				using (StreamReader stream = new StreamReader(webResponse.GetResponseStream()))
+				{
+				}
+			});
 		}
 
 		/// <summary>

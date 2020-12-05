@@ -22,15 +22,23 @@
 				<RowDefinition Height="1*"/>
 				<RowDefinition x:Name="messageTextBoxCellHeight" Height="85"/>
 			</Grid.RowDefinitions>
-			<ScrollViewer Grid.Row="0">
+			<ScrollViewer x:Name="messagesScroll" Grid.Row="0" CanContentScroll="True">
 				<ListBox x:Name="messagesList"
 						 HorizontalAlignment="Left"
 						 VerticalAlignment="Bottom"
 						 Background="{x:Null}"
 						 BorderBrush="{x:Null}">
+					<ListBoxItem>
+						<Grid Height="40" Width="100" HorizontalAlignment="Center" MouseUp="Grid_MouseUp">
+							<Rectangle Fill="#FF7FC4F3" Height="40" RadiusX="20" RadiusY="20"/>
+							<TextBlock Text="Load more" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Light" />
+							<Rectangle Fill="White" VerticalAlignment="Bottom" Height="0"/>
+						</Grid>
+					</ListBoxItem>
 				</ListBox>
 			</ScrollViewer>
 			<Rectangle Grid.Row="0" Height="15" VerticalAlignment="Top" Fill="{StaticResource ShadowBorder}" Margin="0 0 17 0"/>
+			<Rectangle Grid.Row="1" Fill="#FFF7F7F7"/>
 			<Rectangle Grid.Row="1" Fill="#FFC5D2E0" Height="1" VerticalAlignment="Top"/>
 			<Rectangle Grid.Row="1" 
 					   Margin="30 20 30 20"
@@ -44,24 +52,6 @@
 				   Foreground="Gray"
 				   FontSize="14"
 				   Margin="48 26 185 20" BorderBrush="Black"/>
-			<TextBox Style="{DynamicResource NoBordersTextBox}"
-					 x:Name="messageTextBox"
-					 Grid.Row="1"
-					 Text=""
-					 MaxLength="500"
-					 Cursor="IBeam"
-					 Margin="40,20,185,20"
-					 Padding="10,10,15,10"
-					 FontSize="14"
-					 AcceptsReturn="True"
-					 VerticalScrollBarVisibility="Auto"
-					 ScrollViewer.CanContentScroll="True"
-					 TextWrapping="Wrap"
-					 BorderBrush="{x:Null}"
-					 Background="{x:Null}"
-					 TextChanged="messageTextBox_TextChanged"
-					 GotFocus="messageTextBox_GotFocus"
-					 LostFocus="messageTextBox_LostFocus"/>
 			<Button x:Name="SendingButton"
 					Content=">"
 					Grid.Row="1"
@@ -77,6 +67,24 @@
 					</ToolTip>
 				</Button.ToolTip>
 			</Button>
+			<TextBox Style="{DynamicResource NoBordersTextBox}"
+					 x:Name="messageTextBox"
+					 Grid.Row="1"
+					 Text=""
+					 MaxLength="2048"
+					 Cursor="IBeam"
+					 Margin="40,20,185,20"
+					 Padding="10,10,15,10"
+					 FontSize="14"
+					 AcceptsReturn="True"
+					 VerticalScrollBarVisibility="Auto"
+					 ScrollViewer.CanContentScroll="True"
+					 TextWrapping="Wrap"
+					 BorderBrush="{x:Null}"
+					 Background="{x:Null}"
+					 TextChanged="messageTextBox_TextChanged"
+					 GotFocus="messageTextBox_GotFocus"
+					 LostFocus="messageTextBox_LostFocus"/>
 		</Grid>
 		<Grid x:Name="userInfoGrid" Grid.Row="0" Grid.Column="0" Background="#FF87A3BF">
 			<Grid.ColumnDefinitions>
