@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using System.Windows.Media.Imaging;
 using Jdenticon;
 using VectorChat.Utilities;
@@ -23,6 +24,7 @@ namespace VectorChat.Client_WPF
 	public partial class MainWindow : Window
 	{
 		private ClientConfig configInfo;
+		EnterWindow enterWindow;
 		private readonly int maxLines = 5;
 		private double messageTextBoxCellStartHeight;
 		private User currentUser;
@@ -53,7 +55,7 @@ namespace VectorChat.Client_WPF
 			}
 		}
 
-		private async void OnLoad(object sender, RoutedEventArgs e)
+		private void OnLoad(object sender, RoutedEventArgs e)
 		{
 			//Loading a configuration file from a local directory if it exists or creating it if it does not exist
 			if (File.Exists(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json")))
@@ -71,6 +73,7 @@ namespace VectorChat.Client_WPF
 			}
 
 			messageTextBoxCellStartHeight = messageTextBoxCellHeight.Height.Value;
+			enterWindow = new EnterWindow(configInfo);
 			OpenEnterWindow();
 
 			messageHistories[0U] = new List<Message>();
@@ -82,15 +85,7 @@ namespace VectorChat.Client_WPF
 
 			if (!string.IsNullOrEmpty(currentUser?.nickname))
 			{
-				await Task.Run(() =>
-				{
-					while (!false)
-					{
-						MessagesRequest();
-						Task.Delay((int)configInfo.messageRequestTime);
-					}
-				}
-				);
+				MessagesRequesting();
 			}
 		}
 
@@ -168,20 +163,46 @@ namespace VectorChat.Client_WPF
 				messageHistories[currentGroupID].AddRange(recivedMessages);
 				foreach (var mes in recivedMessages)
 				{
-					messagesList.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() => BuildMessageBubble(messagesList, mes, sendingEdge.bottom)));
+					messagesList.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => BuildMessageBubble(messagesList, mes, sendingEdge.bottom)));
 				}
 
-				if (onBottom) messagesList.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() => messagesScroll.ScrollToBottom()));
+				if (onBottom) messagesList.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => messagesScroll.ScrollToBottom()));
 			}
 		}
 
-		private void MessagesRequesting()
+		private async void MessagesRequesting()
 		{
-			while (!false)
+			await Task.Run(() =>
 			{
-				MessagesRequest();
-				Thread.Sleep((int)configInfo.messageRequestTime);
-			}
+				while (!false)
+				{
+					try
+					{
+						MessagesRequest();
+						userInfoGrid.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
+						{
+							if ((connectLabel.Content as string) != "Online") {
+								connectLabel.Content = "Online";
+								connectLabel.FontWeight = FontWeights.Normal;
+								connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(77, 77, 77));
+								SendingButton.IsEnabled = true;
+							}
+						}));
+						Task.Delay((int)configInfo.messageRequestTime);
+					}
+					catch
+					{
+						userInfoGrid.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
+						{
+							connectLabel.Content = "Connect";
+							connectLabel.FontWeight = FontWeights.SemiBold;
+							connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(185, 17, 17));
+							SendingButton.IsEnabled = false;
+						}));
+						break;
+					}
+				}
+			});
 		}
 
 		/// <summary>
@@ -305,7 +326,6 @@ namespace VectorChat.Client_WPF
 
 		private void OpenEnterWindow()
 		{
-			var enterWindow = new EnterWindow(configInfo);
 			if (enterWindow.ShowDialog() == true)
 			{
 				currentUser = enterWindow.session.user;
@@ -385,30 +405,41 @@ namespace VectorChat.Client_WPF
 			}
 		}
 
-		private async void Grid_MouseUp(object sender, MouseButtonEventArgs e)
+		private async void loadHIstoryGrid_MouseUp(object sender, MouseButtonEventArgs e)
 		{
-			await Task.Run(() =>
+			if (connectLabel.Content as string == "Online")
 			{
-				if (messageHistories[currentGroupID].Count > 0)
+				await Task.Run(() =>
 				{
-					DateTime ts = new DateTime();
-					double ofset;
-					var recivedMessages = new List<Message>();
-					ts = messageHistories[currentGroupID][0].timestamp;
-					ofset = messagesScroll.VerticalOffset;
-					recivedMessages = ClientRequests.GetRequest(configInfo.serverAddress, currentUser?.nickname, currentUser.userID, currentGroupID, ts, 40);
-					messageHistories[currentGroupID].InsertRange(0, recivedMessages);
-					recivedMessages.Reverse();
-					messagesList.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+					if (messageHistories[currentGroupID].Count > 0)
 					{
-						foreach (var mes in recivedMessages)
+						DateTime ts = new DateTime();
+						double ofset;
+						var recivedMessages = new List<Message>();
+						ts = messageHistories[currentGroupID][0].timestamp;
+						ofset = messagesScroll.VerticalOffset;
+						recivedMessages = ClientRequests.GetRequest(configInfo.serverAddress, currentUser?.nickname, currentUser.userID, currentGroupID, ts, 40);
+						messageHistories[currentGroupID].InsertRange(0, recivedMessages);
+						recivedMessages.Reverse();
+						messagesList.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
 						{
-							BuildMessageBubble(messagesList, mes, sendingEdge.top);
-						}
-						messagesScroll.ScrollToVerticalOffset(ofset);
-					}));
-				}
-			});
+							foreach (var mes in recivedMessages)
+							{
+								BuildMessageBubble(messagesList, mes, sendingEdge.top);
+							}
+							messagesScroll.ScrollToVerticalOffset(ofset);
+						}));
+					}
+				});
+			}
+		}
+
+		private void connectLabel_MouseUp(object sender, MouseButtonEventArgs e)
+		{
+			if (((sender as Label).Content as string) == "Connect")
+			{
+				MessagesRequesting();
+			}
 		}
 	}
 }

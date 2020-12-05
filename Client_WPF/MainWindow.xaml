@@ -29,7 +29,7 @@
 						 Background="{x:Null}"
 						 BorderBrush="{x:Null}">
 					<ListBoxItem>
-						<Grid Height="40" Width="100" HorizontalAlignment="Center" MouseUp="Grid_MouseUp">
+						<Grid Height="40" Width="100" HorizontalAlignment="Center" MouseUp="loadHIstoryGrid_MouseUp">
 							<Rectangle Fill="#FF7FC4F3" Height="40" RadiusX="20" RadiusY="20"/>
 							<TextBlock Text="Load more" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Light" />
 							<Rectangle Fill="White" VerticalAlignment="Bottom" Height="0"/>
@@ -108,11 +108,12 @@
 				FontSize="16"/>
 				<Label
 				x:Name="connectLabel"
-				Content="Connect status"
+				Content="Сonnection status"
 				Foreground="#4D4D4D"
 				FontSize="14"
 				Padding="5 0 0 0"
-				Width="210"/>
+				Width="210"
+				MouseUp="connectLabel_MouseUp"/>
 			</WrapPanel>
 		</Grid>
 		<Grid Grid.Row="0" Grid.Column="1" Background="#C6D2DE">

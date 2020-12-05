@@ -36,6 +36,8 @@
 		/// </summary>
 		GroupUnavailable,
 
+		NoConnection,
+
 		/// <summary>
 		/// An unknown error occured which can not be described by existing error codes<br/>
 		/// The default message for this code is "Unknown error."

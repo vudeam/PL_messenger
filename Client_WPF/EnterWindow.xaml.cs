@@ -79,6 +79,10 @@ namespace VectorChat.Client_WPF
 						ErrorLabel.Text = response.defaultMessage;
 						ErrorLabel.Opacity = 1;
 						return;
+					case ApiErrCodes.NoConnection:
+						ErrorLabel.Text = "No connection to server";
+						ErrorLabel.Opacity = 1;
+						return;
 					case ApiErrCodes.Unknown:
 						ErrorLabel.Text = "Damn what you've done!";
 						ErrorLabel.Opacity = 1;
@@ -105,6 +109,10 @@ namespace VectorChat.Client_WPF
 						return;
 					case ApiErrCodes.LoginTaken:
 						ErrorLabel.Text = "Entered login is already taken";
+						ErrorLabel.Opacity = 1;
+						return;
+					case ApiErrCodes.NoConnection:
+						ErrorLabel.Text = "No connection to server";
 						ErrorLabel.Opacity = 1;
 						return;
 					case ApiErrCodes.Unknown:
@@ -157,7 +165,20 @@ namespace VectorChat.Client_WPF
 					password = passwordPasswordBox.Password
 				}
 			};
-			return ClientRequests.PostRequest(configInfo.serverAddress, type, newAccount);
+			AuthResponse response;
+			try
+			{
+				 response = ClientRequests.PostRequest(configInfo.serverAddress, type, newAccount);
+			}
+			catch
+			{
+				response = new AuthResponse()
+				{
+					code = ApiErrCodes.NoConnection
+				};
+			}
+			return response;
+
 		}
 
 		private void Window_KeyDown(object sender, KeyEventArgs e)

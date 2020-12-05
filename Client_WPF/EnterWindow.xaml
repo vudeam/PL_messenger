@@ -86,7 +86,7 @@
 				<TextBox Style="{DynamicResource local_TransparentTextBox}" x:Name="nicknameTextBox"
 						 GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus"/>
 			</Grid>
-			<TextBlock x:Name="ErrorLabel" Text="Error" HorizontalAlignment="Center" FontSize="12" Opacity="0"/>
+			<TextBlock x:Name="ErrorLabel" Text="Error" HorizontalAlignment="Center" FontSize="12" Foreground="#FFB91111" Opacity="0"/>
 			<Grid x:Name="authButtonGrid" Margin="0 10 0 3" MouseUp="EnterButton_MouseUp">
 				<Rectangle Style="{StaticResource local_RoundedBorderButton}"/>
 				<TextBlock Text="Log in" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="DemiBold"/>
