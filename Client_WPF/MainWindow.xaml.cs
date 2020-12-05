@@ -119,6 +119,23 @@ namespace VectorChat.Client_WPF
 			}
 			if (!String.IsNullOrEmpty(messageTextBox.Text) && infoAvailable)
 			{
+				int end = messageTextBox.Text.Length - 1;
+				for (int i = 1; i < end; i++)
+				{
+					if (messageTextBox.Text[i] == ' ' && messageTextBox.Text[i - 1] == ' ' && messageTextBox.Text[i + 1] == ' ')
+					{
+						messageTextBox.Text = messageTextBox.Text.Remove(i - 1, 1);
+						i -= 1;
+						end -= 1;
+					}
+					if (i > 1 && i < end - 1)
+						if (messageTextBox.Text[i] == '\r' && messageTextBox.Text[i - 2] == '\r' && messageTextBox.Text[i + 2] == '\r')
+						{
+							messageTextBox.Text = messageTextBox.Text.Remove(i - 1, 2);
+							i -= 1;
+							end -= 2;
+						}
+				}
 				Message mes = new Message()
 				{
 					content = messageTextBox.Text,
