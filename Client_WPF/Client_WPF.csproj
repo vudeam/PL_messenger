@@ -9,6 +9,9 @@
 
   <ItemGroup>
     <None Remove="Assets\little-arrow.png" />
+    <None Remove="Assets\SendingBtn-Color.png" />
+    <None Remove="Assets\SendingBtn-Gray.png" />
+    <None Remove="Assets\SendingBtn-LightGray.png" />
     <None Remove="VectorChatLogo.png" />
   </ItemGroup>
 
@@ -23,6 +26,9 @@
 
   <ItemGroup>
     <Resource Include="Assets\little-arrow.png" />
+    <Resource Include="Assets\SendingBtn-Color.png" />
+    <Resource Include="Assets\SendingBtn-Gray.png" />
+    <Resource Include="Assets\SendingBtn-LightGray.png" />
     <Resource Include="Assets\VectorChatLogo.png" />
   </ItemGroup>
 

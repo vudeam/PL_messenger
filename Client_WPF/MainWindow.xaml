@@ -52,15 +52,17 @@
 				   Foreground="Gray"
 				   FontSize="14"
 				   Margin="48 26 185 20" BorderBrush="Black"/>
-			<Button x:Name="SendingButton"
+			<Button Style="{DynamicResource SendingButton}"
+					x:Name="SendingButton"
 					Content=">"
 					Grid.Row="1"
 					IsDefault="True"
-					Height="35"
-					Margin="0 0 60 25" Click="Send"
+					Height="26"
+					Margin="0 0 60 28" 
+					Click="Send"
 					VerticalAlignment="Bottom"
 					HorizontalAlignment="Right"
-					Width="35">
+					Width="65">
 				<Button.ToolTip>
 					<ToolTip>
 						Send (Ctrl+Enter)
