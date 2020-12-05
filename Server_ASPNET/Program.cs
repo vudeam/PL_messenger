@@ -1,10 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using VectorChat.Utilities;
@@ -118,6 +116,23 @@ namespace VectorChat.ServerASPNET
 		/// (is added to the List of registered Users)
 		/// </summary>
 		internal static bool CheckUserRegistration(User _usr) => UsersList.Exists(u => u == _usr);
+
+		/// <summary>
+		/// 
+		/// </summary>
+		internal static List<Message> LoadGropMessages(uint gID = 0)
+		{
+			if (System.IO.File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{gID}", "messages.json")))
+			{
+				return FileWorker.LoadFromFile<List<Message>>(
+					Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{gID}", "messages.json")
+				);
+			}
+			else
+			{
+				return new List<Message>();
+			}
+		}
 
 		private static void LoadUsersStorage(string path)
 		{

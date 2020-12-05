@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
@@ -39,7 +39,7 @@ namespace VectorChat.ServerASPNET.Controllers
 		/// <remarks>Route: <c>GET messages/{nickname}/{userID}/{groupID}/{ts}</c></remarks>
 		[HttpGet("messages/{nick}/{uID}/{gID}/{ts}")]
 		[Produces("application/json")]
-		public IActionResult GetMessagesBerofeNow(string nick, uint uID, uint gID, DateTime ts)
+		public IActionResult GetMessagesAfterTs(string nick, uint uID, uint gID, DateTime ts)
 		{
 			#region Logging
 			if (Server.config.EnableFileLogging)
@@ -60,19 +60,38 @@ namespace VectorChat.ServerASPNET.Controllers
 
 			List<Message> response = new List<Message>();
 
-			if (!Server.CheckUserRegistration(new User($"{nick}#{uID}"))) return Ok(response);
+			if (!Server.CheckUserRegistration(new User(nick, uID))) return Ok(response);
 
 			if (Server.groupsStorage.ContainsKey(gID)) // found requested group
 			{
-				if (Server.groupsStorage[gID].group.members.Exists(u => u == new User($"{nick}#{uID}"))) // found group member
+				if (Server.groupsStorage[gID].group.members.Exists(u => u == new User(nick, uID))) // found group member
 				{
-					// SELECT messages with Timestamp less than {ts}
-					var messages = from msg in Server.groupsStorage[gID].messages
-								   where msg.timestamp > ts
-								   orderby msg.timestamp
-								   select msg;
+					DateTime mark = Server.groupsStorage[gID].messages.Count == 0 ? DateTime.Now : Server.groupsStorage[gID].messages.Min(m => m.timestamp);
+					// if needed messages are already loaded to a file
+					if (ts < mark)
+					{
+						List<Message> reallyAllMessages = Server.LoadGropMessages(gID);
 
-					response = new List<Message>(messages);
+						reallyAllMessages.AddRange(Server.groupsStorage[gID].messages);
+
+						// SELECT messages with Timestamp less than {ts}
+						var messages = from msg in reallyAllMessages
+									   where msg.timestamp > ts
+									   orderby msg.timestamp
+									   select msg;
+
+						response = new List<Message>(messages);
+					}
+					else
+					{
+						// SELECT messages with Timestamp less than {ts}
+						var messages = from msg in Server.groupsStorage[gID].messages
+									   where msg.timestamp > ts
+									   orderby msg.timestamp
+									   select msg;
+
+						response = new List<Message>(messages);
+					}
 
 					//Console.WriteLine("selected messages:");
 					//foreach (var item in response) Console.WriteLine(item);
@@ -87,7 +106,7 @@ namespace VectorChat.ServerASPNET.Controllers
 		/// </summary>
 		/// <remarks>Route: <c>GET messages/{nickname}/{userID}/{groupID}/{ts}/{count}</c></remarks>
 		[HttpGet("messages/{nick}/{uID}/{gID}/{ts}/{count}")]
-		public IActionResult GetMessagesBeforeTs(string nick, uint uID, uint gID, DateTime ts, int count)
+		public IActionResult GetCountMessagesBeforeTs(string nick, uint uID, uint gID, DateTime ts, int count)
 		{
 			#region Logging
 			if (Server.config.EnableFileLogging)
@@ -107,21 +126,49 @@ namespace VectorChat.ServerASPNET.Controllers
 
 			List<Message> response = new List<Message>();
 
-			if (!Server.CheckUserRegistration(new User($"{nick}#{uID}"))) return Ok(response);
+			if (!Server.CheckUserRegistration(new User(nick, uID))) return Ok(response);
 
 			if (Server.groupsStorage.ContainsKey(gID)) // found requested group
 			{
-				if (Server.groupsStorage[gID].group.members.Exists(u => u == new User($"{nick}#{uID}"))) // found group member
+				if (Server.groupsStorage[gID].group.members.Exists(u => u == new User(nick, uID))) // found group member
 				{
-					var messages = (from msg in Server.groupsStorage[gID].messages
-									where msg.timestamp <= ts
-									orderby msg.timestamp
-									select msg)
-									.TakeLast(count);
-					response = new List<Message>(messages);
+					int c = (from msg in Server.groupsStorage[gID].messages
+							  where msg.timestamp <= ts
+							  orderby msg.timestamp
+							  select msg).Count();
+					
+					// if not enough messages are stored - load from file
+					if (c < count)
+					{
+						List<Message> reallyAllMessages = Server.LoadGropMessages();
+						reallyAllMessages.AddRange(Server.groupsStorage[gID].messages);
 
-					//Console.WriteLine($"Selected {response.Count} messages:");
-					//foreach (var item in response) Console.WriteLine(item);
+						var messages = (from msg in reallyAllMessages
+										where msg.timestamp < ts
+										orderby msg.timestamp
+										select msg)
+										.TakeLast(count);
+
+						response = new List<Message>(messages);
+					}
+					else // act as normal and select from RAM
+					{
+						var messages = (from msg in Server.groupsStorage[gID].messages
+										where msg.timestamp < ts
+										orderby msg.timestamp
+										select msg)
+										.TakeLast(count);
+
+						response = new List<Message>(messages);
+					}
+
+
+					if (response.Count > 0)
+					{
+						Console.WriteLine($"Selected {response.Count} messages:");
+						foreach (var item in response) Console.WriteLine(item);
+					}
+					
 				}
 			}
 
@@ -225,6 +272,10 @@ namespace VectorChat.ServerASPNET.Controllers
 					Server.groupsStorage[msg.groupID].messages.Add(msg);
 					//consoleLogger.LogInformation(Server.groupsStorage[msg.groupID].messages[^1].ToString());
 
+					// trigger an event in another Thread
+					Thread messagesHistoryUpdate = new Thread(OnMessageAdded) { Name = "Updater.exe", IsBackground = true };
+					messagesHistoryUpdate.Start();
+
 					response.code = ApiErrCodes.Success;
 					response.defaultMessage = "OK";
 					response.usr = new User(msg.fromID);
@@ -248,29 +299,47 @@ namespace VectorChat.ServerASPNET.Controllers
 				new Message() { content = "Hello", fromID = "o#0", timestamp = DateTime.Now, groupID = 0U }
 			);
 
-			MessageAdded(this, new MessageEventArgs() { TotalMessagesCount = 111 });
+			MessageAdded();
 
 			return Ok("Hello there, General Kenobi");
 		}
 
 		#region Non-Action methods
+
 		/// <summary>
-		/// 
+		/// Handle <see cref="VectorChat.Utilities.Message"/> addition event:
+		/// Move messages from RAM to files and clear RAM
 		/// </summary>
 		/// <remarks>This method is <c>[NonAction]</c>, so it can not be called by client.</remarks>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
 		[NonAction]
-		public static void OnMessageAdded(object sender, MessageEventArgs args)
+		private static void OnMessageAdded()
 		{
-			// Console.WriteLine((sender as ChatController).Request.Path + args.TotalMessagesCount);
-
 			// if less than a limit
-			if ((args.TotalMessagesCount <= Server.config.StoredMessagesLimit) || (Server.config.StoredMessagesLimit < 0)) return;
+			if ((Server.AllMessagesCount <= Server.config.StoredMessagesLimit) || (Server.config.StoredMessagesLimit < 0)) return;
 
 			// upload all messages to a file
+			foreach (var pair in Server.groupsStorage)
+			{
+				List<Message> storedMessages = FileWorker.LoadFromFile<List<Message>>(
+					Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{pair.Key}", "messages.json")
+				);
+
+				// add current messages to already stored
+				storedMessages.AddRange(pair.Value.messages);
+
+				FileWorker.SaveToFile(
+					Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{pair.Key}", "messages.json"),
+					storedMessages
+				);
+
+				// clear messages stored in Server
+				Server.groupsStorage[pair.Key].messages.Clear();
+			}
 
 		}
+
 		#endregion
 
 		#region Old methods

@@ -44,7 +44,7 @@ namespace VectorChat.Utilities
 		}
 	}
 
-	public delegate void MessageEventHandler(object sender, MessageEventArgs args);
+	public delegate void MessageEventHandler();
 
 	/// <summary>
 	/// Arguments for all <see cref="VectorChat.Utilities.Message"/> events

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Identity;
 using VectorChat.Utilities;
 using VectorChat.Utilities.Credentials;
 
@@ -48,7 +46,7 @@ namespace VectorChat.ServerASPNET.Controllers
 		/// <remarks>Route: <c>POST signup</c></remarks>
 		[HttpPost("signup")]
 		[Produces("application/json")]
-		public async Task<IActionResult> Register([FromBody] SignupRequest data)
+		public IActionResult Register([FromBody] SignupRequest data)
 		{
 			#region Logging
 			if (Server.config.EnableFileLogging)
@@ -110,7 +108,7 @@ namespace VectorChat.ServerASPNET.Controllers
 					response.defaultMessage = "Unknown error. Possible registration problem";
 				}
 			}
-
+			Console.WriteLine("response sent");
 			return Ok(response);
 		}
 
@@ -172,6 +170,7 @@ namespace VectorChat.ServerASPNET.Controllers
 		}
 
 		#region Non-Action methods
+
 		/// <summary>
 		/// Compute SHA512 hash from <paramref name="input"/>
 		/// </summary>
@@ -208,6 +207,7 @@ namespace VectorChat.ServerASPNET.Controllers
 				return 0U;
 			}
 		}
+
 		#endregion
 	}
 }

@@ -2,14 +2,11 @@ using System.IO;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using VectorChat.Utilities;
-using VectorChat.Utilities.Credentials;
 
 namespace VectorChat.ServerASPNET
 {
@@ -26,10 +23,6 @@ namespace VectorChat.ServerASPNET
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddControllers();
-			services.Configure<IdentityOptions>(options =>
-			{
-				options.SignIn.RequireConfirmedEmail = true;
-			});
 		}
 
 		/// <summary>
@@ -56,6 +49,23 @@ namespace VectorChat.ServerASPNET
 				if (Server.GroupsList.Count > 0)
 				{
 					FileWorker.SaveToFile(Path.Combine(Directory.GetCurrentDirectory(), "groups.json"), Server.GroupsList);
+				}
+
+				
+				consoleLogger.Log(LogLevel.Warning, "Saving messages...");
+				if (Server.AllMessagesCount > 0)
+				{
+					foreach (var pair in Server.groupsStorage)
+					{
+						List<Message> loadedMessages = FileWorker.LoadFromFile<List<Message>>(
+							Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{pair.Key}", "messages.json")
+						);
+						loadedMessages.AddRange(pair.Value.messages);
+						FileWorker.SaveToFile(
+							Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{pair.Key}", "messages.json"),
+							loadedMessages
+						);
+					}
 				}
 					
 				consoleLogger.Log(LogLevel.Warning, "Finished saving files");
