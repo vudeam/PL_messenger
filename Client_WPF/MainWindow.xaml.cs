@@ -208,7 +208,7 @@ namespace VectorChat.Client_WPF
 			{
 				Style = messageTextBox.Style,
 				TextWrapping = TextWrapping.Wrap,
-				Width = 240,
+				Width = 350,
 				Text = _msg.content,
 				FontSize = 16,
 				Background = null,
