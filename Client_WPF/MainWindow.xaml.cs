@@ -175,6 +175,7 @@ namespace VectorChat.Client_WPF
 			connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(88, 114, 158));
 			connectLabel.Content = "Connecting...";
 			connectLabel.FontWeight = FontWeights.Normal;
+			connectLabel.Cursor = Cursors.Arrow;
 			connectRect.Width = 0;
 			await Task.Run(() =>
 			{
@@ -199,6 +200,7 @@ namespace VectorChat.Client_WPF
 						{
 							connectLabel.Content = "Connect";
 							connectLabel.FontWeight = FontWeights.Medium;
+							connectLabel.Cursor = Cursors.Hand;
 							connectLabel.UpdateLayout();
 							connectRect.Width = connectLabel.ActualWidth;
 							connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(32, 84, 220));
@@ -444,6 +446,25 @@ namespace VectorChat.Client_WPF
 			if ((connectLabel.Content as string) == "Connect")
 			{
 				MessagesRequesting();
+			}
+		}
+
+		private void messageTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter)
+			{
+				if (Keyboard.Modifiers == ModifierKeys.Control)
+				{
+					e.Handled = false;
+					int pos = messageTextBox.SelectionStart;
+					messageTextBox.Text = messageTextBox.Text.Insert(messageTextBox.SelectionStart, Environment.NewLine);
+					messageTextBox.SelectionStart = pos + 1;
+				}
+				else if (Keyboard.Modifiers != ModifierKeys.Control)
+				{
+					e.Handled = true;
+					Send(SendingButton, null);
+				}
 			}
 		}
 	}

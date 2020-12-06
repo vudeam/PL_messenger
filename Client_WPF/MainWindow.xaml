@@ -56,7 +56,7 @@
 					x:Name="SendingButton"
 					Cursor="Hand"
 					Grid.Row="1"
-					IsDefault="True"
+					IsDefault="False"
 					Height="26"
 					Margin="0 0 60 28" 
 					Click="Send"
@@ -65,7 +65,7 @@
 					Width="65">
 				<Button.ToolTip>
 					<ToolTip>
-						Send (Ctrl+Enter)
+						Send (Enter)
 					</ToolTip>
 				</Button.ToolTip>
 			</Button>
@@ -86,7 +86,8 @@
 					 Background="{x:Null}"
 					 TextChanged="messageTextBox_TextChanged"
 					 GotFocus="messageTextBox_GotFocus"
-					 LostFocus="messageTextBox_LostFocus"/>
+					 LostFocus="messageTextBox_LostFocus" 
+					 PreviewKeyDown="messageTextBox_PreviewKeyDown"/>
 		</Grid>
 		<Grid x:Name="userInfoGrid" Grid.Row="0" Grid.Column="0" Background="#FF87A3BF">
 			<Grid.ColumnDefinitions>
@@ -130,7 +131,6 @@
 						Padding="3 0 3 0"
 						HorizontalAlignment="Left"
 						VerticalAlignment="Bottom"
-						Cursor="Hand"
 						MouseUp="connectLabel_MouseUp"/>
 				</Grid>
 			</StackPanel>
