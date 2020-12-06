@@ -86,12 +86,12 @@
 				<TextBox Style="{DynamicResource local_TransparentTextBox}" x:Name="nicknameTextBox"
 						 GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus"/>
 			</Grid>
-			<TextBlock x:Name="ErrorLabel" Text="Error" HorizontalAlignment="Center" FontSize="12" Foreground="#FFB91111" Opacity="0"/>
-			<Grid x:Name="authButtonGrid" Margin="0 10 0 3" MouseUp="EnterButton_MouseUp">
+			<TextBlock x:Name="ErrorLabel" Text="Error" HorizontalAlignment="Center" FontSize="12" Foreground="#FF2054DC" Opacity="0"/>
+			<Grid x:Name="authButtonGrid" Margin="0 10 0 3" Cursor="Hand" MouseUp="EnterButton_MouseUp">
 				<Rectangle Style="{StaticResource local_RoundedBorderButton}"/>
 				<TextBlock Text="Log in" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="DemiBold"/>
 			</Grid>
-			<TextBlock x:Name="modeSwapLabel" Text="Sign up" HorizontalAlignment="Center"
+			<TextBlock x:Name="modeSwapLabel" Text="Sign up" HorizontalAlignment="Center" Cursor="Hand"
                        FontSize="9" Foreground="Gray" MouseUp="SwapButton_Click" FontWeight="DemiBold"/>
 		</StackPanel>
 	</Grid>

@@ -172,6 +172,10 @@ namespace VectorChat.Client_WPF
 
 		private async void MessagesRequesting()
 		{
+			connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(88, 114, 158));
+			connectLabel.Content = "Connecting...";
+			connectLabel.FontWeight = FontWeights.Normal;
+			connectRect.Width = 0;
 			await Task.Run(() =>
 			{
 				while (!false)
@@ -183,7 +187,6 @@ namespace VectorChat.Client_WPF
 						{
 							if ((connectLabel.Content as string) != "Online") {
 								connectLabel.Content = "Online";
-								connectLabel.FontWeight = FontWeights.Normal;
 								connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(77, 77, 77));
 								SendingButton.IsEnabled = true;
 							}
@@ -195,8 +198,10 @@ namespace VectorChat.Client_WPF
 						userInfoGrid.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
 						{
 							connectLabel.Content = "Connect";
-							connectLabel.FontWeight = FontWeights.SemiBold;
-							connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(185, 17, 17));
+							connectLabel.FontWeight = FontWeights.Medium;
+							connectLabel.UpdateLayout();
+							connectRect.Width = connectLabel.ActualWidth;
+							connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(32, 84, 220));
 							SendingButton.IsEnabled = false;
 						}));
 						break;
@@ -436,7 +441,7 @@ namespace VectorChat.Client_WPF
 
 		private void connectLabel_MouseUp(object sender, MouseButtonEventArgs e)
 		{
-			if (((sender as Label).Content as string) == "Connect")
+			if ((connectLabel.Content as string) == "Connect")
 			{
 				MessagesRequesting();
 			}
