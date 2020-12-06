@@ -52,6 +52,18 @@ namespace VectorChat.Utilities
 			"appeared"
 		};
 
+		public static readonly string[] goodbyes = new string[]
+		{
+			" has left the chat",
+			" now not with us",
+			" disconnected from the group",
+			" disconnected",
+			" left us",
+			", sad: mr.Stark i don't feel good...",
+			" vanished",
+			" disappeared"
+		};
+
 		public static readonly string LoginLogoutNotification = "VectorChat.LoginLogoutNotification";
 
 	}

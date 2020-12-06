@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Windows;
@@ -31,6 +31,7 @@ namespace VectorChat.Client_WPF
 		private string currentToken;
 		private uint currentGroupID;
 		private readonly Dictionary<uint, List<Message>> messageHistories = new Dictionary<uint, List<Message>>();
+		private static readonly Random rng = new Random(DateTime.Now.Millisecond);
 
 		enum sendingEdge
 		{
@@ -273,7 +274,7 @@ namespace VectorChat.Client_WPF
 			};
 
 			var icon = new Grid();
-			if (_msg.fromID != Message.LoginNotification)
+			if (_msg.fromID != MessagePhrases.LoginLogoutNotification)
 			{
 				icon = DrawRoundedIdenticon(30, Colors.Transparent, Colors.Transparent, _msg.fromID);
 				vertStack.Children.Add(nickname);
@@ -464,6 +465,31 @@ namespace VectorChat.Client_WPF
 				{
 					e.Handled = true;
 					Send(SendingButton, null);
+				}
+			}
+		}
+
+		private void mainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			if (!string.IsNullOrEmpty(currentUser?.nickname) && (connectLabel.Content as string) == "Online")
+			{
+				Message mes = new Message()
+				{
+					content = $"{ mainWindow.currentUser}{MessagePhrases.goodbyes[rng.Next(MessagePhrases.goodbyes.Length)]}",
+					timestamp = DateTime.Now,
+					fromID = MessagePhrases.LoginLogoutNotification,
+					groupID = mainWindow.currentGroupID
+				};
+				HttpWebRequest signupToServer = WebRequest.CreateHttp(mainWindow.configInfo.serverAddress + "/api/chat/messages");
+				signupToServer.Method = "POST";
+				signupToServer.ContentType = "application/json";
+				using (StreamWriter stream = new StreamWriter(signupToServer.GetRequestStream()))
+				{
+					stream.Write(JsonSerializer.Serialize(mes));
+				}
+				var webResponse = (HttpWebResponse)signupToServer.GetResponse();
+				using (StreamReader stream = new StreamReader(webResponse.GetResponseStream()))
+				{
 				}
 			}
 		}
