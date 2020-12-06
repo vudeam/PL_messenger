@@ -272,7 +272,7 @@ namespace VectorChat.ServerASPNET.Controllers
 			if (Server.groupsStorage.ContainsKey(msg.groupID)) // target group exists
 			{
 				// recieved notification message
-				if (msg.fromID.Equals(Message.LoginLogoutNotification))
+				if (msg.fromID.Equals(MessagePhrases.LoginLogoutNotification))
 				{
 					Server.groupsStorage[msg.groupID].messages.Add(msg);
 
