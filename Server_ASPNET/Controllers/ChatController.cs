@@ -60,7 +60,7 @@ namespace VectorChat.ServerASPNET.Controllers
 
 			List<Message> response = new List<Message>();
 
-			if (!Server.CheckUserRegistration(new User(nick, uID))) return Ok(response);
+			if (!Server.CheckUserRegistration($"{nick}#{uID}")) return Ok(response);
 
 			if (Server.groupsStorage.ContainsKey(gID)) // found requested group
 			{
@@ -131,7 +131,7 @@ namespace VectorChat.ServerASPNET.Controllers
 
 			List<Message> response = new List<Message>();
 
-			if (!Server.CheckUserRegistration(new User(nick, uID))) return Ok(response);
+			if (!Server.CheckUserRegistration($"{nick}#{uID}")) return Ok(response);
 
 			if (Server.groupsStorage.ContainsKey(gID)) // found requested group
 			{
@@ -271,11 +271,45 @@ namespace VectorChat.ServerASPNET.Controllers
 
 			if (Server.groupsStorage.ContainsKey(msg.groupID)) // target group exists
 			{
-				// user belongs to the target group
-				if (Server.groupsStorage[msg.groupID].group.members.Exists(u => u == new User(msg.fromID)))
+				// recieved notification message
+				if (msg.fromID.Equals(Message.LoginLogoutNotification))
 				{
 					Server.groupsStorage[msg.groupID].messages.Add(msg);
-					//consoleLogger.LogInformation(Server.groupsStorage[msg.groupID].messages[^1].ToString());
+
+					#region Logging
+					if (Server.config.EnableFileLogging)
+					{
+						fileLogger.Log(LogLevel.Information, Server.groupsStorage[msg.groupID].messages[^1].ToString());
+					}
+					if (Server.config.EnableVerboseConsole)
+					{
+						consoleLogger.LogInformation(Server.groupsStorage[msg.groupID].messages[^1].ToString());
+					}
+					#endregion
+
+					// trigger an event in another Thread
+					Thread messagesHistoryUpdate = new Thread(OnMessageAdded) { Name = "Updater.exe", IsBackground = true };
+					messagesHistoryUpdate.Start();
+
+					response.code = ApiErrCodes.Success;
+					response.defaultMessage = "OK";
+					response.usr = new User() { nickname = msg.fromID };
+				}
+				// user belongs to the target group
+				else if (Server.groupsStorage[msg.groupID].group.members.Exists(u => u == new User(msg.fromID)))
+				{
+					Server.groupsStorage[msg.groupID].messages.Add(msg);
+
+					#region Logging
+					if (Server.config.EnableFileLogging)
+					{
+						fileLogger.Log(LogLevel.Information, Server.groupsStorage[msg.groupID].messages[^1].ToString());
+					}
+					if (Server.config.EnableVerboseConsole)
+					{
+						consoleLogger.LogInformation(Server.groupsStorage[msg.groupID].messages[^1].ToString());
+					}
+					#endregion
 
 					// trigger an event in another Thread
 					Thread messagesHistoryUpdate = new Thread(OnMessageAdded) { Name = "Updater.exe", IsBackground = true };

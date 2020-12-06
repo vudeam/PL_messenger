@@ -14,9 +14,6 @@ namespace VectorChat.Utilities
 		public string fromID { get; set; }
 		public uint groupID { get; set; }
 
-		[NonSerialized]
-		public static readonly string LoginLogoutNotification = "VectorChat.LoginLogoutNotification";
-
 		/// <returns>Formatted string which shows timestamp, user ID and message contents </returns>
 		public override string ToString() => $"[{this.timestamp.ToLongTimeString()}] {this.fromID} : {this.content}";
 
@@ -39,6 +36,24 @@ namespace VectorChat.Utilities
 				   fromID == message.fromID &&
 				   timestamp == message.timestamp;
 		}
+	}
+
+	public static class MessagePhrases
+	{
+		public static readonly string[] welcomes = new string[]
+		{
+			"is here",
+			"is here with us",
+			"joined the group",
+			"joined us",
+			"joined the chat",
+			"enters here",
+			"lands in this chat",
+			"appeared"
+		};
+
+		public static readonly string LoginLogoutNotification = "VectorChat.LoginLogoutNotification";
+
 	}
 
 	public delegate void MessageEventHandler();

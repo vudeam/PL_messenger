@@ -29,18 +29,6 @@ namespace VectorChat.ServerASPNET.Controllers
 
 		private static readonly PasswordHasher<Account> hasher = new PasswordHasher<Account>();
 
-		private static readonly string[] welcomes = new string[]
-		{
-			"is here",
-			"is here with us",
-			"joined the group",
-			"joined us",
-			"joined the chat",
-			"enters here",
-			"lands in this chat",
-			"appeared"
-		};
-
 		private static readonly Random rng = new Random(DateTime.Now.Millisecond);
 
 		/// <remarks>Route: <c>POST signup</c></remarks>
@@ -155,8 +143,8 @@ namespace VectorChat.ServerASPNET.Controllers
 					Server.groupsStorage[0U].messages.Add(
 						new Message()
 						{
-							content = $"{response.usr} {welcomes[rng.Next(welcomes.Length)]}",
-							fromID = Message.LoginLogoutNotification,
+							content = $"{response.usr} {MessagePhrases.welcomes[rng.Next(MessagePhrases.welcomes.Length)]}",
+							fromID = MessagePhrases.LoginLogoutNotification,
 							groupID = 0U,
 							timestamp = DateTime.Now
 						}

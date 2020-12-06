@@ -120,8 +120,11 @@ namespace VectorChat.ServerASPNET
 		/// Checks if specified <paramref name="_usr"/> is registered on the <see cref="VectorChat.ServerASPNET.Server"/> 
 		/// (is added to the List of registered Users)
 		/// </summary>
-		internal static bool CheckUserRegistration(User _usr) => UsersList.Exists(u => u == _usr);
-		internal static bool CheckUserRegistration(string _uID) => _uID.Equals(Message.LoginLogoutNotification);
+		internal static bool CheckUserRegistration(string _usr)
+		{
+			if (_usr.Equals(MessagePhrases.LoginLogoutNotification)) return true;
+			else return UsersList.Exists(u => u == new User(_usr));
+		}
 
 		/// <returns>
 		/// <see cref="List{VectorChat.Utilities.Message}"/> of Messages from 
