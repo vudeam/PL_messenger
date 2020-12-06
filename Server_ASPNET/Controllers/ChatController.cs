@@ -261,7 +261,7 @@ namespace VectorChat.ServerASPNET.Controllers
 			response.code = ApiErrCodes.GroupUnavailable;
 			response.defaultMessage = "Target group is unavailable.";
 
-			if (!Server.CheckUserRegistration(new User(msg.fromID))) // user is not regustered
+			if (!Server.CheckUserRegistration(msg.fromID)) // user is not regustered
 			{
 				response.code = ApiErrCodes.LoginNotFound;
 				response.defaultMessage = "Message sender is not a registered User";

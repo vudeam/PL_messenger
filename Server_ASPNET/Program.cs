@@ -121,10 +121,12 @@ namespace VectorChat.ServerASPNET
 		/// (is added to the List of registered Users)
 		/// </summary>
 		internal static bool CheckUserRegistration(User _usr) => UsersList.Exists(u => u == _usr);
+		internal static bool CheckUserRegistration(string _uID) => _uID.Equals(Message.LoginLogoutNotification);
 
-		/// <summary>
-		/// 
-		/// </summary>
+		/// <returns>
+		/// <see cref="List{VectorChat.Utilities.Message}"/> of Messages from 
+		/// <see cref="VectorChat.Utilities.Credentials.Group"/> identified by <paramref name="gID"/>
+		/// </returns>
 		internal static List<Message> LoadGropMessages(uint gID = 0)
 		{
 			if (System.IO.File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{gID}", "messages.json")))

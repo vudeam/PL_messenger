@@ -27,7 +27,7 @@ namespace VectorChat.ServerASPNET.Controllers
 
 		public static readonly ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "logs", "AuthLog.log"));
 
-		private static PasswordHasher<Account> hasher = new PasswordHasher<Account>();
+		private static readonly PasswordHasher<Account> hasher = new PasswordHasher<Account>();
 
 		private static readonly string[] welcomes = new string[]
 		{
@@ -156,8 +156,7 @@ namespace VectorChat.ServerASPNET.Controllers
 						new Message()
 						{
 							content = $"{response.usr} {welcomes[rng.Next(welcomes.Length)]}",
-							// fromID = response.usr.ToString(),
-							fromID = Message.LoginNotification,
+							fromID = Message.LoginLogoutNotification,
 							groupID = 0U,
 							timestamp = DateTime.Now
 						}

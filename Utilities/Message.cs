@@ -15,10 +15,7 @@ namespace VectorChat.Utilities
 		public uint groupID { get; set; }
 
 		[NonSerialized]
-		public static readonly string LoginNotification = "VectorChat.LoginNotofication";
-
-		[NonSerialized]
-		public static readonly string GroupCreationNotification = "VectorChat.GroupCreationNotofocation";
+		public static readonly string LoginLogoutNotification = "VectorChat.LoginLogoutNotification";
 
 		/// <returns>Formatted string which shows timestamp, user ID and message contents </returns>
 		public override string ToString() => $"[{this.timestamp.ToLongTimeString()}] {this.fromID} : {this.content}";
