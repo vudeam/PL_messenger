@@ -93,8 +93,13 @@ namespace VectorChat.ServerASPNET.Controllers
 						response = new List<Message>(messages);
 					}
 
-					//Console.WriteLine("selected messages:");
-					//foreach (var item in response) Console.WriteLine(item);
+					if (Server.config.EnableVerboseConsole && response.Count > 0)
+					{
+						string s = $"Selected {response.Count} messages:" + Environment.NewLine;
+						foreach (Message item in response) s += item.ToString() + Environment.NewLine;
+						consoleLogger.Log(LogLevel.Information, s);
+					}
+
 				}
 			}
 			
@@ -162,13 +167,13 @@ namespace VectorChat.ServerASPNET.Controllers
 						response = new List<Message>(messages);
 					}
 
-
-					if (response.Count > 0)
+					if (Server.config.EnableVerboseConsole && response.Count > 0)
 					{
-						Console.WriteLine($"Selected {response.Count} messages:");
-						foreach (var item in response) Console.WriteLine(item);
+						string s = $"Selected {response.Count} messages:" + Environment.NewLine;
+						foreach (Message item in response) s += item.ToString() + Environment.NewLine;
+						consoleLogger.Log(LogLevel.Information, s);
 					}
-					
+
 				}
 			}
 

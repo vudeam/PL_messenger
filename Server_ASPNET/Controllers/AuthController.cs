@@ -93,9 +93,13 @@ namespace VectorChat.ServerASPNET.Controllers
 					Server.groupsStorage[0U].group.members.Add(response.usr); // add registered user to the group chat
 					//Server.groups.Find(g => g.groupID == 0U).members.Add(response.usr); 1
 
-					consoleLogger.Log(LogLevel.Information, $"Added new User: {response.usr}");
-					consoleLogger.Log(LogLevel.Debug, $"{data.acc.login}:{Server.usersStorage[data.acc.login].passHash}{Environment.NewLine}");
-
+					if (Server.config.EnableVerboseConsole)
+					{
+						consoleLogger.Log(LogLevel.Warning, $"New Account registered: {response.usr}" + Environment.NewLine +
+							$"{data.acc.login}:{Server.usersStorage[data.acc.login].passHash}" + Environment.NewLine
+						);
+					}
+					
 					// update data stored in file
 					FileWorker.SaveToFileAsync(
 						Path.Combine(Directory.GetCurrentDirectory(), "UsersStorage.json"),
@@ -108,7 +112,7 @@ namespace VectorChat.ServerASPNET.Controllers
 					response.defaultMessage = "Unknown error. Possible registration problem";
 				}
 			}
-			Console.WriteLine("response sent");
+			
 			return Ok(response);
 		}
 

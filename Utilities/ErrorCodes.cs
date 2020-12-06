@@ -36,6 +36,9 @@
 		/// </summary>
 		GroupUnavailable,
 
+		/// <summary>
+		/// This code is used by Client to craft a fake response when the Server is offline (unreachable)
+		/// </summary>
 		NoConnection,
 
 		/// <summary>

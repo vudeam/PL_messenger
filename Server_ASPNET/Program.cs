@@ -91,16 +91,21 @@ namespace VectorChat.ServerASPNET
 					//--------------------------------------------------
 				}
 
-				consoleLogger.Log(LogLevel.Warning, "Loading messages storage...");
+				consoleLogger.Log(LogLevel.Warning, "Setting up messages storage...");
 				Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage"));
 				foreach (uint gID in groupsStorage.Keys)
 				{
-					Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{gID}"));
+					string messagesFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{gID}");
+					Directory.CreateDirectory(messagesFolderPath);
 				}
 			}
 			catch (Exception ex)
 			{
 				consoleLogger.Log(LogLevel.Critical, ex, "Failed to load initial files");
+
+				Console.WriteLine(Environment.NewLine + "Press Enter to close this window...");
+				Console.ReadLine();
+				return;
 			}
 
 			CreateHostBuilder(args).Build().Run();
@@ -165,8 +170,8 @@ namespace VectorChat.ServerASPNET
 				config = new ServerConfig() // default config
 				{
 					Port = "8080",
-					//DataLoadSeconds = 3600,
 					EnableFileLogging = false,
+					EnableVerboseConsole = false,
 					StoredMessagesLimit = 1000
 				};
 				if (config.EnableFileLogging)

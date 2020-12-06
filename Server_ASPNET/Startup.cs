@@ -51,22 +51,23 @@ namespace VectorChat.ServerASPNET
 					FileWorker.SaveToFile(Path.Combine(Directory.GetCurrentDirectory(), "groups.json"), Server.GroupsList);
 				}
 
-				
 				consoleLogger.Log(LogLevel.Warning, "Saving messages...");
 				if (Server.AllMessagesCount > 0)
-				{
 					foreach (var pair in Server.groupsStorage)
 					{
-						List<Message> loadedMessages = FileWorker.LoadFromFile<List<Message>>(
-							Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{pair.Key}", "messages.json")
-						);
+						string messagesFilePath = Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{pair.Key}", "messages.json");
+
+						// create file with empty list if not exists
+						if (!File.Exists(Path.Combine(messagesFilePath)))
+						{
+							FileWorker.SaveToFile(Path.Combine(messagesFilePath), new List<Message>());
+						}
+
+						List<Message> loadedMessages = FileWorker.LoadFromFile<List<Message>>(messagesFilePath);
 						loadedMessages.AddRange(pair.Value.messages);
-						FileWorker.SaveToFile(
-							Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{pair.Key}", "messages.json"),
-							loadedMessages
-						);
+
+						FileWorker.SaveToFile(messagesFilePath, loadedMessages);
 					}
-				}
 					
 				consoleLogger.Log(LogLevel.Warning, "Finished saving files");
 			});
