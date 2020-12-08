@@ -11,6 +11,7 @@ using System.Windows.Shapes;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Animation;
 using Jdenticon;
 using VectorChat.Utilities;
 using VectorChat.Utilities.Credentials;
@@ -100,47 +101,49 @@ namespace VectorChat.Client_WPF
 			ReloadTextBoxHeight(messageTextBox, messageTextBoxCellHeight, messageTextBoxCellStartHeight, maxLines);
 		}
 
-
+		//Sending a post request storing the message to the server
 		private void Send(object sender, RoutedEventArgs e)
 		{
-			//Sending a post request storing the message to the server
-			bool infoAvailable = false;
-			foreach (char symbol in messageTextBox.Text)
+			if ((connectLabel.Content as string) == "Online")
 			{
-				if (symbol != ' ' && symbol != '\r' && symbol != '\n')
+				bool infoAvailable = false;
+				foreach (char symbol in messageTextBox.Text)
 				{
-					infoAvailable = true;
-					break;
-				}
-			}
-			if (!String.IsNullOrEmpty(messageTextBox.Text) && infoAvailable)
-			{
-				int end = messageTextBox.Text.Length - 1;
-				for (int i = 1; i < end; i++)
-				{
-					if (messageTextBox.Text[i] == ' ' && messageTextBox.Text[i - 1] == ' ' && messageTextBox.Text[i + 1] == ' ')
+					if (symbol != ' ' && symbol != '\r' && symbol != '\n')
 					{
-						messageTextBox.Text = messageTextBox.Text.Remove(i - 1, 1);
-						i -= 1;
-						end -= 1;
+						infoAvailable = true;
+						break;
 					}
-					if (i > 1 && i < end - 1)
-						if (messageTextBox.Text[i] == '\r' && messageTextBox.Text[i - 2] == '\r' && messageTextBox.Text[i + 2] == '\r')
-						{
-							messageTextBox.Text = messageTextBox.Text.Remove(i - 1, 2);
-							i -= 1;
-							end -= 2;
-						}
 				}
-				Message mes = new Message()
+				if (!String.IsNullOrEmpty(messageTextBox.Text) && infoAvailable)
 				{
-					content = messageTextBox.Text,
-					timestamp = DateTime.Now,
-					fromID = currentUser.ToString(),
-					groupID = currentGroupID
-				};
-				ClientRequests.PostRequest(configInfo.serverAddress, mes);
-				messageTextBox.Text = string.Empty;
+					int end = messageTextBox.Text.Length - 1;
+					for (int i = 1; i < end; i++)
+					{
+						if (messageTextBox.Text[i] == ' ' && messageTextBox.Text[i - 1] == ' ' && messageTextBox.Text[i + 1] == ' ')
+						{
+							messageTextBox.Text = messageTextBox.Text.Remove(i - 1, 1);
+							i -= 1;
+							end -= 1;
+						}
+						if (i > 1 && i < end - 1)
+							if (messageTextBox.Text[i] == '\r' && messageTextBox.Text[i - 2] == '\r' && messageTextBox.Text[i + 2] == '\r')
+							{
+								messageTextBox.Text = messageTextBox.Text.Remove(i - 1, 2);
+								i -= 1;
+								end -= 2;
+							}
+					}
+					Message mes = new Message()
+					{
+						content = messageTextBox.Text,
+						timestamp = DateTime.Now,
+						fromID = currentUser.ToString(),
+						groupID = currentGroupID
+					};
+					ClientRequests.PostRequest(configInfo.serverAddress, mes);
+					messageTextBox.Text = string.Empty;
+				}
 			}
 		}
 
@@ -173,52 +176,59 @@ namespace VectorChat.Client_WPF
 
 		private async void MessagesRequesting()
 		{
-			connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(88, 114, 158));
-			connectLabel.Content = "Connecting...";
-			connectLabel.FontWeight = FontWeights.Normal;
-			connectLabel.Cursor = Cursors.Arrow;
-			connectRect.Width = 0;
-			await Task.Run(() =>
+			int reconectionCount = 3;
+			for (int i = 0; i < reconectionCount; i++)
 			{
-				while (!false)
+				connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(88, 114, 158));
+				connectLabel.Content = "Connecting...";
+				connectLabel.FontWeight = FontWeights.Normal;
+				connectLabel.Cursor = Cursors.Arrow;
+				connectRect.Width = 0;
+				await Task.Run(() =>
 				{
-					try
+					while (!false)
 					{
-						MessagesRequest();
-						userInfoGrid.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
+						try
 						{
-							if ((connectLabel.Content as string) != "Online") {
-								connectLabel.Content = "Online";
-								connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(77, 77, 77));
-								SendingButton.IsEnabled = true;
-							}
-						}));
-						Task.Delay((int)configInfo.messageRequestTime);
-					}
-					catch
-					{
-						userInfoGrid.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
+							MessagesRequest();
+							userInfoGrid.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
+							{
+								if ((connectLabel.Content as string) != "Online")
+								{
+									connectLabel.Content = "Online";
+									connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(77, 77, 77));
+									SendingButton.IsEnabled = true;
+								}
+							}));
+							Task.Delay((int)configInfo.messageRequestTime);
+						}
+						catch
 						{
-							connectLabel.Content = "Connect";
-							connectLabel.FontWeight = FontWeights.Medium;
-							connectLabel.Cursor = Cursors.Hand;
-							connectLabel.UpdateLayout();
-							connectRect.Width = connectLabel.ActualWidth;
-							connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(32, 84, 220));
-							SendingButton.IsEnabled = false;
-						}));
-						break;
+							if (i < reconectionCount-1) break;
+							userInfoGrid.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
+							{
+								connectLabel.Content = "Connect";
+								connectLabel.FontWeight = FontWeights.Medium;
+								connectLabel.Cursor = Cursors.Hand;
+								connectLabel.UpdateLayout();
+								connectRect.Width = connectLabel.ActualWidth;
+								connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(32, 84, 220));
+								SendingButton.IsEnabled = false;
+							}));
+							break;
+						}
 					}
-				}
-			});
+				});
+			}
 		}
 
 		/// <summary>
-		///	Adds a message unit to the specified ListBox.
+		///	Adds a message unit to the specified StackPanel.
 		/// </summary>
-		/// <param name="_msg"></param>
-		/// <param name="messagesArea"></param>
-		private void BuildMessageBubble(ListBox messagesArea, Message _msg, sendingEdge edge)
+		/// <param name="_msg">The message object that will be processed and added to the StackPanel as a bubble</param>
+		/// <param name="messagesArea">StackPanel in which the message bubble will be created</param>
+		/// <param name="edge">Message is added to the beginning of the StackPanel or to the end</param>
+		private void BuildMessageBubble(StackPanel messagesArea, Message _msg, sendingEdge edge)
 		{
 			Index end = edge == 0 ? 1 : ^1;
 			var mainGrid = new Grid();
@@ -228,6 +238,7 @@ namespace VectorChat.Client_WPF
 
 			mainGrid.ColumnDefinitions.Add(new ColumnDefinition());
 			mainGrid.ColumnDefinitions.Add(new ColumnDefinition());
+			mainGrid.HorizontalAlignment = HorizontalAlignment.Left;
 
 			vertStack.Orientation = Orientation.Vertical;
 			horizStack.Orientation = Orientation.Horizontal;
@@ -259,7 +270,8 @@ namespace VectorChat.Client_WPF
 				FontSize = 16,
 				Background = null,
 				BorderBrush = null,
-				Focusable = false
+				Focusable = false,
+				Cursor = Cursors.Arrow
 			};
 
 			var time = new Label()
@@ -311,25 +323,20 @@ namespace VectorChat.Client_WPF
 			mainGrid.Children.Add(icon);
 			Grid.SetColumn(vertStack, 1);
 			mainGrid.Children.Add(vertStack);
-			if (end.ToString().Equals("^1"))
-				messagesArea.Items.Add(mainGrid);
-			else
-				messagesArea.Items.Insert(1, mainGrid);
 
-			var renderedMessageGrid = (((messagesArea.Items[end] as Grid).Children[1] as StackPanel).Children[1] as StackPanel).Children[0] as Grid; //So it should.
-			foreach (var objects in renderedMessageGrid.Children)
-			{
-				if (objects.GetType().Equals(typeof(TextBox)))
-				{
-					TextBox renderedTb = objects as TextBox;
-					renderedTb.UpdateLayout();
-					renderedTb.Width = tb.ExtentWidth + 6;
-					renderedTb.Height = tb.ExtentHeight + 2;
-					renderedMessageGrid.Width = tb.Width + 14;
-					renderedMessageGrid.Height = tb.Height + 10;
-				}
-			}
-			(messagesArea.Items[end] as Grid).Margin = new Thickness(10, 0, 10, 0);
+			if (end.ToString().Equals("^1"))
+				messagesArea.Children.Add(mainGrid);
+			else
+				messagesArea.Children.Insert(1, mainGrid);
+
+			var renderedMessageGrid = (((messagesArea.Children[end] as Grid).Children[1] as StackPanel).Children[1] as StackPanel).Children[0] as Grid; //So it should.
+			TextBox renderedTb = renderedMessageGrid.Children[1] as TextBox;
+			renderedTb.UpdateLayout();
+			renderedTb.Width = tb.ExtentWidth + 6;
+			renderedTb.Height = tb.ExtentHeight + 2;
+			renderedMessageGrid.Width = tb.Width + 14;
+			renderedMessageGrid.Height = tb.Height + 10;
+			(messagesArea.Children[end] as Grid).Margin = new Thickness(10, 0, 10, 5);
 		}
 
 		private void OpenEnterWindow()
@@ -415,30 +422,74 @@ namespace VectorChat.Client_WPF
 
 		private async void loadHIstoryGrid_MouseUp(object sender, MouseButtonEventArgs e)
 		{
-			if (connectLabel.Content as string == "Online")
+			if (connectLabel.Content as string == "Online" && horizPlusRect.Width == 20)
 			{
-				await Task.Run(() =>
+				DoubleAnimation widthAnimation = new DoubleAnimation();
+				widthAnimation.From = horizPlusRect.Width;
+				widthAnimation.To = 0;
+				widthAnimation.Duration = TimeSpan.FromSeconds(0.2);
+
+				DoubleAnimation heightAnimation = new DoubleAnimation();
+				heightAnimation.From = vertPlusRect.Height;
+				heightAnimation.To = 0;
+				heightAnimation.Duration = TimeSpan.FromSeconds(0.2);
+
+				horizPlusRect.BeginAnimation(WidthProperty, widthAnimation);
+				vertPlusRect.BeginAnimation(HeightProperty, heightAnimation);
+
+				if (messageHistories[currentGroupID].Count > 0)
 				{
-					if (messageHistories[currentGroupID].Count > 0)
+					await Task.Run(() =>
 					{
+
 						DateTime ts = new DateTime();
-						double ofset;
 						var recivedMessages = new List<Message>();
 						ts = messageHistories[currentGroupID][0].timestamp;
-						ofset = messagesScroll.VerticalOffset;
 						recivedMessages = ClientRequests.GetRequest(configInfo.serverAddress, currentUser?.nickname, currentUser.userID, currentGroupID, ts, 40);
 						messageHistories[currentGroupID].InsertRange(0, recivedMessages);
 						recivedMessages.Reverse();
 						messagesList.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
 						{
-							foreach (var mes in recivedMessages)
+							if (recivedMessages.Count > 0)
 							{
-								BuildMessageBubble(messagesList, mes, sendingEdge.top);
+								DoubleAnimation widthAnimation = new DoubleAnimation();
+								widthAnimation.From = horizPlusRect.Width;
+								widthAnimation.To = 20;
+								widthAnimation.Duration = TimeSpan.FromSeconds(0.2);
+
+								DoubleAnimation heightAnimation = new DoubleAnimation();
+								heightAnimation.From = vertPlusRect.Height;
+								heightAnimation.To = 20;
+								heightAnimation.Duration = TimeSpan.FromSeconds(0.2);
+
+								horizPlusRect.BeginAnimation(WidthProperty, widthAnimation);
+								vertPlusRect.BeginAnimation(HeightProperty, heightAnimation);
+								foreach (var mes in recivedMessages)
+								{
+									BuildMessageBubble(messagesList, mes, sendingEdge.top);
+								}
+
 							}
-							messagesScroll.ScrollToVerticalOffset(ofset);
+							else
+							{
+								DoubleAnimation opacityAnimation = new DoubleAnimation();
+								opacityAnimation.From = moreBtn.Opacity;
+								opacityAnimation.To = 0;
+								opacityAnimation.Duration = TimeSpan.FromSeconds(0.4);
+
+								ThicknessAnimation marginAnimation = new ThicknessAnimation();
+								marginAnimation.From = moreBtn.Margin;
+								marginAnimation.To = new Thickness(150, 0, 0, 0);
+								marginAnimation.Duration = TimeSpan.FromSeconds(0.4);
+
+								moreBtn.BeginAnimation(OpacityProperty, opacityAnimation);
+								moreBtn.BeginAnimation(MarginProperty, marginAnimation);
+								moreBtn.Cursor = Cursors.Arrow;
+								moreBtn.IsEnabled = false;
+							}
 						}));
-					}
-				});
+					});
+				}
 			}
 		}
 
@@ -475,12 +526,12 @@ namespace VectorChat.Client_WPF
 			{
 				Message mes = new Message()
 				{
-					content = $"{ mainWindow.currentUser}{MessagePhrases.goodbyes[rng.Next(MessagePhrases.goodbyes.Length)]}",
+					content = $"{ currentUser}{MessagePhrases.goodbyes[rng.Next(MessagePhrases.goodbyes.Length)]}",
 					timestamp = DateTime.Now,
 					fromID = MessagePhrases.LoginLogoutNotification,
-					groupID = mainWindow.currentGroupID
+					groupID = currentGroupID
 				};
-				HttpWebRequest signupToServer = WebRequest.CreateHttp(mainWindow.configInfo.serverAddress + "/api/chat/messages");
+				HttpWebRequest signupToServer = WebRequest.CreateHttp(configInfo.serverAddress + "/api/chat/messages");
 				signupToServer.Method = "POST";
 				signupToServer.ContentType = "application/json";
 				using (StreamWriter stream = new StreamWriter(signupToServer.GetRequestStream()))
