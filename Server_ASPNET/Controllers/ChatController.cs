@@ -111,6 +111,7 @@ namespace VectorChat.ServerASPNET.Controllers
 		/// </summary>
 		/// <remarks>Route: <c>GET messages/{nickname}/{userID}/{groupID}/{ts}/{count}</c></remarks>
 		[HttpGet("messages/{nick}/{uID}/{gID}/{ts}/{count}")]
+		[Produces("application/json")]
 		public IActionResult GetCountMessagesBeforeTs(string nick, uint uID, uint gID, DateTime ts, int count)
 		{
 			#region Logging
