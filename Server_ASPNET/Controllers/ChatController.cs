@@ -231,6 +231,17 @@ namespace VectorChat.ServerASPNET.Controllers
 			return response;
 		}
 
+		/// <returns>Number of members in requested <paramref name="gID"/></returns>
+		[HttpGet("groups/{nick}/{uID}/{gID}/count")]
+		[Produces("application/json")]
+		public IActionResult GetGroupMembersCount(string nick, uint uID, uint gID)
+		{
+			// if provided User of Group does not exist, return 0
+			if (!Server.CheckUserRegistration($"{nick}#{uID}") || !Server.groupsStorage.ContainsKey(gID)) return Ok(0);
+
+			return Ok(Server.groupsStorage[gID].group.members.Count);
+		}
+
 		/// <summary>
 		/// Get and write one <see cref="VectorChat.Utilities.Message"/> from the client
 		/// </summary>

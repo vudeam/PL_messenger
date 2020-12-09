@@ -22,6 +22,7 @@ namespace VectorChat.ServerASPNET
 
 		public void ConfigureServices(IServiceCollection services)
 		{
+			services.AddCors();
 			services.AddControllers();
 		}
 
@@ -73,6 +74,12 @@ namespace VectorChat.ServerASPNET
 			});
 
 			app.UseRouting();
+
+			app.UseCors(builder =>
+			{
+				//builder.WithOrigins("http://192.168.1.38", "http://192.168.1.47", "http://192.168.1.1", "http://localost", "http://127.0.0.1");
+				builder.AllowAnyOrigin();
+			});
 
 			app.UseEndpoints(endpoints =>
 			{
