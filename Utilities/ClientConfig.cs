@@ -10,18 +10,21 @@ namespace VectorChat.Utilities
 	[Serializable]
 	public struct ClientConfig
 	{
-		public ClientConfig(uint messageRequestTime, string serverAddress, int mainWindowHeight, int mainWindowWidth)
-		{
-			this.messageRequestTime = messageRequestTime;
-			this.serverAddress = serverAddress;
-			this.mainWindowHeight = mainWindowHeight;
-			this.mainWindowWidth = mainWindowWidth;
-		}
-
 		public uint messageRequestTime { get; set; }
-		public string serverAddress { get; set; }
+
 		public int mainWindowHeight { get; set; }
+
 		public int mainWindowWidth { get; set; }
+
+		/// <summary>Remote server address (including port)</summary>
+		public string serverAddress { get; set; }
+
+		/// <summary>Enables using credentials stored in config.json for authentication</summary>
+		public bool enableFileAuth { get; set; }
+
+		public string login { get; set; }
+
+		public string password { get; set; }
 
 	}
 }

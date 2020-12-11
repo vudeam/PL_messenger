@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text.Json;
+using System.Globalization;
 using System.Collections.Generic;
 using Terminal.Gui;
 using VectorChat.Utilities;
@@ -12,93 +13,58 @@ namespace VectorChat.Client_Console
 	class ConsoleClient
 	{
 		private static ClientConfig config;
-
-		internal static (User user, System.Collections.Generic.List<Message> messages) Session;
+		internal static (User user, List<Message> messages) Session;
+		private static MenuBar mainMenu;
+		private static Window mainWindow;
+		private static Window messagesWindow;
+		//private static TextField messageTextField;
+		private static TextView msgTextView;
+		private static Button sendButton;
 
 		public static void Main()
 		{
-			LoadConfig();
-
 			Application.Init();
 
 			Application.Top.ColorScheme = Colors.TopLevel;
 
-			#region
-			//switch(MessageBox.Query("Login/Signup", "", "Log in", "Sign up"))
-			//{
-			//	// login
-			//	case 0:
-			//		SignupRequest signupRequest = new SignupRequest() { acc = new Account() };
-			//		//Console.Write("Login: ");
-			//		signupRequest.acc.login = "admin";
-			//		//Console.Write("Password: ");
-			//		signupRequest.acc.password = "admin";
-
-			//		AuthResponse auth = LoginSignupResponse($"{config.serverAddress}/api/auth/login", signupRequest);
-			//		switch (auth.code)
-			//		{
-			//			case ApiErrCodes.Success:
-			//				Session.user = auth.usr;
-			//				Session.messages = new List<Message>();
-			//				break;
-			//		}
-
-			//		break;
-
-			//	// signup
-			//	case 1:
-			//		break;
-
-			//	default:
-			//		return;
-			//}
-
-			//Window mainWindow = new Window("VectorChat Console Client")
-			//{
-			//	X = 0,
-			//	Y = 0,
-			//	Width = Dim.Fill(),
-			//	Height = Dim.Fill()
-			//};
-			//mainWindow.ColorScheme = Colors.Dialog;
-
-			//TextField messageField = new TextField()
-			//{
-			//	X = mainWindow.X + 1,
-			//	Y = mainWindow.Y + 10,
-			//	CanFocus = true,
-			//	Width = Dim.Width(mainWindow),
-			//	Height = Dim.Height(mainWindow)
-			//};
-			//messageField.Visible = true;
-			//messageField.ReadOnly = false;
-			////messageField.Bounds = new Rect(messageField.X, messageField.Y, messageField.Width, messageField.Height);
-
-			//Application.Top.Add(mainWindow, messageField);
-			#endregion
-
 			// Attach menu bar
-			MenuBar mainMenu = new MenuBar(new MenuBarItem[]
+			mainMenu = new MenuBar(new MenuBarItem[]
 			{
 				new MenuBarItem("_Action", new MenuItem[]
 				{
-					new MenuItem("_Login", NStack.ustring.Empty, () =>
+					new MenuItem("_Login", NStack.ustring.Empty, () => {}),  // Add login callback
+					new MenuItem("_Signup", NStack.ustring.Empty, () => {}), // Add signup callback
+					new MenuItem("Load _up", NStack.ustring.Empty, () =>
 					{
-						AuthResponse r = ServerRequest<AuthResponse>(
-							$"{config.serverAddress}/api/auth/login",
-							new SignupRequest() { acc = new Account() { login = "admin", password = "admin"}}
+						List<Message> received = ServerRequest<List<Message>>(
+							$"{config.serverAddress}/api/chat/messages/" +
+							$"{Session.user.nickname}/{Session.user.userID}/{0}/" +
+							$"{DateTime.Now.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture)}/{21}",
+							null,
+							"GET"
 						);
-						if (r.code != ApiErrCodes.Success) return;
-						Session = (r.usr, new List<Message>());
-					}), // Add login  callback
-					new MenuItem("_Signup", NStack.ustring.Empty, () => {}) // Add signup callback
+						Session.messages.InsertRange(0, received);
+						DrawMessages(Session.messages, messagesWindow);
+					}),
+					new MenuItem("Load _down", NStack.ustring.Empty, () =>
+					{
+						List<Message> received = ServerRequest<List<Message>>(
+							$"{config.serverAddress}/api/chat/messages/" +
+							$"{Session.user.nickname}/{Session.user.userID}/{0}/" +
+							$"{DateTime.Now.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture)}",
+							null,
+							"GET"
+						);
+						Session.messages.AddRange(received);
+						DrawMessages(Session.messages, messagesWindow);
+					})
 				}),
 				new MenuBarItem("_Quit", "Exit the app", Application.RequestStop)
 			});
 			Application.Top.Add(mainMenu);
 
 			// Attach main window (parent for next windows)
-			Window mainWindow = new Window("VectorChat Console Client")
+			mainWindow = new Window("VectorChat Console Client")
 			{
 				X = 0,
 				Y = Pos.Bottom(mainMenu),
@@ -108,36 +74,48 @@ namespace VectorChat.Client_Console
 			};
 			Application.Top.Add(mainWindow);
 
-			Window messagesWindow = new Window()
+			messagesWindow = new Window()
 			{
 				X = 0,
 				Y = 0,
 				Width = mainWindow.Width,
-				Height = mainWindow.Height - 1,
+				Height = mainWindow.Height - 4, // !!!!!!!!!!!!!!!!!!!!!!!! change to -1
 				ColorScheme = Colors.Dialog
 			};
 			mainWindow.Add(messagesWindow);
 
-			//mainWindow.Add(new Label()
+			//messageTextField = new TextField()
 			//{
-			//	X = Pos.Left(messagesWindow),
-			//	Y = Pos.Bottom(messagesWindow) + 1,
-			//	Width = 1,
+			//	X = Pos.Left(messagesWindow) + 1,
+			//	Y = Pos.Bottom(messagesWindow),
+			//	Width = messagesWindow.Width - 10,
 			//	Height = 1,
-			//	Text = ">",
-			//});
+			//	ReadOnly = true,
+			//	ColorScheme = Colors.Dialog
+			//};
+			//mainWindow.Add(messageTextField);
 
-			TextField messageTextField = new TextField()
+			msgTextView = new TextView()
 			{
 				X = Pos.Left(messagesWindow) + 1,
 				Y = Pos.Bottom(messagesWindow),
 				Width = messagesWindow.Width - 10,
-				Height = 1,
-				ColorScheme = Colors.Dialog
+				Height = 4,
+				ReadOnly = true,
+				ColorScheme = Colors.Dialog,
+				
 			};
-			mainWindow.Add(messageTextField);
+			msgTextView.TextChanged += () =>
+			{
+				if (msgTextView.Text.Length > 10)
+				{
+					msgTextView.Text = NStack.ustring.Empty;
+					msgTextView.ScrollTo(-1);
+				}
+			};
+			mainWindow.Add(msgTextView);
 
-			Button sendBtn = new Button()
+			sendButton = new Button()
 			{
 				X = Pos.Right(messagesWindow) - 10,
 				Y = Pos.Bottom(messagesWindow),
@@ -146,13 +124,16 @@ namespace VectorChat.Client_Console
 				Text = "_Send",
 				IsDefault = true
 			};
-			sendBtn.Clicked += () =>
+			sendButton.Clicked += () =>
 			{
+				// if (NStack.ustring.IsNullOrEmpty(messageTextField.Text)) return;
+				if (NStack.ustring.IsNullOrEmpty(msgTextView.Text)) return;
 				AuthResponse r = ServerRequest<AuthResponse>(
 					$"{config.serverAddress}/api/chat/messages",
 					new Message()
 					{
-						content = messageTextField.Text.ToString(),
+						//content = messageTextField.Text.ToString(),
+						content = msgTextView.Text.ToString(),
 						fromID = Session.user.ToString(),
 						groupID = 0,
 						timestamp = DateTime.Now
@@ -160,23 +141,46 @@ namespace VectorChat.Client_Console
 				);
 
 				if (r.code != ApiErrCodes.Success) return;
-				messageTextField.Text = NStack.ustring.Empty;
+				// messageTextField.Text = NStack.ustring.Empty;
+				msgTextView.Text = NStack.ustring.Empty;
 			};
-			mainWindow.Add(sendBtn);
+			mainWindow.Add(sendButton);
+
+			LoadConfig();
 
 			Application.Run();
 
 		}
 
+		private static void DrawMessages(List<Message> messages, Window container)
+		{
+			container.RemoveAll();
+			int offset = 0;
+			foreach (Message msg in messages)
+			{
+				View mesView = new View()
+				{
+					X = 0,
+					Y = Pos.Top(messagesWindow) + offset,
+					Width = messagesWindow.Width,
+					Height = 1,
+					Text = msg.ToString()
+				};
+				container.Add(mesView);
+				Application.Refresh();
+				offset += 1;
+			}
+		}
+
 		/// <summary></summary>
-		/// <typeparam name="TResponse"></typeparam>
+		/// <typeparam name="TResponse">Type which response will be deserialized to</typeparam>
 		/// <returns>Respone of type <typeparamref name="TResponse"/> deserialized from JSON</returns>
 		private static TResponse ServerRequest<TResponse>(string url, object body, string method = "POST")
 		{
 			HttpWebRequest webRequest = WebRequest.CreateHttp(url);
 			webRequest.Method = method;
 			webRequest.ContentType = "application/json";
-			using (StreamWriter writer = new StreamWriter(webRequest.GetRequestStream()))
+			if (body != null) using (StreamWriter writer = new StreamWriter(webRequest.GetRequestStream()))
 			{
 				writer.Write(JsonSerializer.Serialize(body));
 			}
@@ -194,12 +198,35 @@ namespace VectorChat.Client_Console
 				config = FileWorker.LoadFromFile<ClientConfig>(
 					Path.Combine(Directory.GetCurrentDirectory(), "config.json")
 				);
+				if (config.enableFileAuth)
+				{
+					AuthResponse r = new AuthResponse() { code = ApiErrCodes.Unknown };
+					try
+					{
+						r = ServerRequest<AuthResponse>(
+							$"{config.serverAddress}/api/auth/login",
+							new SignupRequest() { acc = new Account() { login = config.login, password = config.password} }
+						);
+					}
+					catch
+					{
+						Session = (new User(), new List<Message>());
+					}
+					if (r.code == ApiErrCodes.Success)
+					{
+						Session = (r.usr, new List<Message>());
+						msgTextView.ReadOnly = false;
+					}
+				}
 			}
 			else
 			{
 				config = new ClientConfig()
 				{
-					serverAddress = "http://127.0.0.1:8080"
+					serverAddress = "http://127.0.0.1:8080",
+					enableFileAuth = false,
+					login = "",
+					password = ""
 				};
 				FileWorker.SaveToFile(Path.Combine(Directory.GetCurrentDirectory(), "config.json"), config);
 			}
