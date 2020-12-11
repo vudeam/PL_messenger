@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
+using System.Collections.Generic;
 using VectorChat.Utilities;
 using VectorChat.Utilities.Credentials;
 using VectorChat.Utilities.ClientRequests;
@@ -21,6 +22,7 @@ namespace VectorChat.Client_WPF
 		};
 
 		internal (User user, string token) session { get; private set; }
+		internal List<Group> startGroups = new List<Group>();
 
 		public EnterWindow(ClientConfig _config)
 		{
@@ -175,6 +177,11 @@ namespace VectorChat.Client_WPF
 			try
 			{
 				response = ClientRequests.ServerRequest<AuthResponse>($"{configInfo.serverAddress}/api/auth/{type}", newAccount);
+				if (response.code == ApiErrCodes.Success)
+				{
+					startGroups = ClientRequests.ServerRequest<List<Group>>($"{configInfo.serverAddress}/api/chat/groups/" +
+						$"{response.usr?.nickname}/{response.usr?.userID}", null, "GET");
+				}
 			}
 			catch
 			{

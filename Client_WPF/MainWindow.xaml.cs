@@ -30,7 +30,7 @@ namespace VectorChat.Client_WPF
 		private double messageTextBoxCellStartHeight;
 		private User currentUser;
 		private string currentToken;
-		private uint currentGroupID;
+		private Group currentGroup;
 		private List<Group> groups = new List<Group>();
 		private readonly Dictionary<uint, List<Message>> messageHistories = new Dictionary<uint, List<Message>>();
 		private static readonly Random rng = new Random(DateTime.Now.Millisecond);
@@ -147,7 +147,7 @@ namespace VectorChat.Client_WPF
 						content = messageTextBox.Text,
 						timestamp = DateTime.Now,
 						fromID = currentUser.ToString(),
-						groupID = currentGroupID
+						groupID = currentGroup.groupID
 					};
 					messageTextBox.Text = string.Empty;
 					await Task.Run(() => ClientRequests.ServerRequest<AuthResponse>($"{configInfo.serverAddress}/api/chat/messages", mes));
@@ -160,24 +160,25 @@ namespace VectorChat.Client_WPF
 			DateTime ts = new DateTime();
 			const uint messagesCount = 20U;
 			var recivedMessages = new List<Message>();
-			if (messageHistories[currentGroupID].Count == 0)
+			if (messageHistories[currentGroup.groupID].Count == 0)
 			{
 				ts = DateTime.Now;
 				recivedMessages = ClientRequests.ServerRequest<List<Message>>($"{configInfo.serverAddress}/api/chat/messages/" +
-					$"{currentUser?.nickname}/{currentUser.userID}/{currentGroupID}/" +
+					$"{currentUser?.nickname}/{currentUser.userID}/{currentGroup.groupID}/" +
 					$"{ts.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture)}/{messagesCount}/", null, "GET");
 			}
 			else
 			{
-				ts = messageHistories[currentGroupID][^1].timestamp;
+				ts = messageHistories[currentGroup.groupID][^1].timestamp;
 				recivedMessages = ClientRequests.ServerRequest<List<Message>>($"{configInfo.serverAddress}/api/chat/messages/" +
-					$"{currentUser?.nickname}/{currentUser.userID}/{currentGroupID}/" +
+					$"{currentUser?.nickname}/{currentUser.userID}/{currentGroup.groupID}/" +
 					$"{ts.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture)}", null, "GET");
 			}
 			if (recivedMessages.Count != 0)
 			{
+				RefreshUsersCount(currentGroup);
 				bool onBottom = messagesScroll.VerticalOffset == messagesScroll.ScrollableHeight;
-				messageHistories[currentGroupID].AddRange(recivedMessages);
+				messageHistories[currentGroup.groupID].AddRange(recivedMessages);
 				foreach (var mes in recivedMessages)
 				{
 					messagesList.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => BuildMessageBubble(messagesList, mes, sendingEdge.bottom)));
@@ -358,14 +359,49 @@ namespace VectorChat.Client_WPF
 			{
 				currentUser = enterWindow.session.user;
 				currentToken = enterWindow.session.token;
-				currentGroupID = enterWindow.session.user.groupsIDs[0];
+				groups = enterWindow.startGroups;
+				currentGroup = groups[0];
 				nicknameLabel.Content = currentUser.nickname;
 				idLabel.Content = "#" + currentUser.userID;
+				SetGroup(currentGroup);
 			}
 			else
 			{
 				Application.Current.MainWindow.Close();
 			}
+		}
+
+		private void SetGroup(Group currentGroup)
+		{
+			groupName.Text = $"{currentGroup.name} #{currentGroup.groupID}";
+			Grid icon = new Grid();
+			icon = DrawRoundedIdenticon(60U, Color.FromRgb(198, 210, 222), Color.FromRgb(88, 117, 158), $"{currentGroup?.name}{currentGroup?.groupID}");
+			icon.HorizontalAlignment = HorizontalAlignment.Right;
+			groupInfoGrid.Children.Add(icon);
+			RefreshUsersCount(currentGroup);
+		}
+
+		private async void RefreshUsersCount(Group currentGroup)
+		{
+			await Task.Run(() => 
+			{
+				groupInfoGrid.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
+				{
+					try
+					{
+						int count = ClientRequests.ServerRequest<int>($"{configInfo.serverAddress}/api/chat/groups/" +
+							$"{currentUser.nickname}/{currentUser.userID}/{currentGroup.groupID}/count", null, "GET");
+						Members.Text = $"{count} group member" + (count > 1 ? "s" : string.Empty); 
+						if (MembersErr.Foreground != Brushes.Transparent)
+							MembersErr.Foreground = Brushes.Transparent;
+					}
+					catch
+					{
+						if (MembersErr.Foreground == Brushes.Transparent)
+							MembersErr.Foreground = Members.Foreground;
+					}
+				}));
+			});
 		}
 
 		private void messageTextBox_GotFocus(object sender, RoutedEventArgs e)
@@ -454,18 +490,18 @@ namespace VectorChat.Client_WPF
 				horizPlusRect.BeginAnimation(WidthProperty, widthAnimation);
 				vertPlusRect.BeginAnimation(HeightProperty, heightAnimation);
 
-				if (messageHistories[currentGroupID].Count > 0)
+				if (messageHistories[currentGroup.groupID].Count > 0)
 				{
 					await Task.Run(() =>
 					{
 						var recivedMessages = new List<Message>();
 						const uint messagesCount = 40U;
-						DateTime ts = messageHistories[currentGroupID][0].timestamp;
+						DateTime ts = messageHistories[currentGroup.groupID][0].timestamp;
 
 						recivedMessages = ClientRequests.ServerRequest<List<Message>>($"{configInfo.serverAddress}/api/chat/messages/" +
-					$"{currentUser?.nickname}/{currentUser.userID}/{currentGroupID}/" +
+					$"{currentUser?.nickname}/{currentUser.userID}/{currentGroup.groupID}/" +
 					$"{ts.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture)}/{messagesCount}", null, "GET");
-						messageHistories[currentGroupID].InsertRange(0, recivedMessages);
+						messageHistories[currentGroup.groupID].InsertRange(0, recivedMessages);
 						recivedMessages.Reverse();
 						messagesList.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
 						{
@@ -555,7 +591,7 @@ namespace VectorChat.Client_WPF
 					content = $"{ currentUser}{MessagePhrases.goodbyes[rng.Next(MessagePhrases.goodbyes.Length)]}",
 					timestamp = DateTime.Now,
 					fromID = MessagePhrases.LoginLogoutNotification,
-					groupID = currentGroupID
+					groupID = currentGroup.groupID
 				};
 				HttpWebRequest signupToServer = WebRequest.CreateHttp(configInfo.serverAddress + "/api/chat/messages");
 				signupToServer.Method = "POST";
