@@ -74,7 +74,6 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
-
 	<Style x:Key="SendingButton" TargetType="{x:Type Button}" BasedOn="{StaticResource TransparentButton}">
 		<Setter Property="Background" Value="{StaticResource LightGrayArrow}"/>
 		<Setter Property="Foreground" Value="{DynamicResource TransparentBrush}"/>

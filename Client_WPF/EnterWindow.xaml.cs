@@ -14,6 +14,12 @@ namespace VectorChat.Client_WPF
 	{
 		ClientConfig configInfo;
 
+		public enum AuthRequestType
+		{
+			login,
+			signup
+		};
+
 		internal (User user, string token) session { get; private set; }
 
 		public EnterWindow(ClientConfig _config)
@@ -168,7 +174,7 @@ namespace VectorChat.Client_WPF
 			AuthResponse response;
 			try
 			{
-				 response = ClientRequests.PostRequest(configInfo.serverAddress, type, newAccount);
+				response = ClientRequests.ServerRequest<AuthResponse>($"{configInfo.serverAddress}/api/auth/{type}", newAccount);
 			}
 			catch
 			{

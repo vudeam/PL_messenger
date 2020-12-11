@@ -31,6 +31,7 @@ namespace VectorChat.Client_WPF
 		private User currentUser;
 		private string currentToken;
 		private uint currentGroupID;
+		private List<Group> groups = new List<Group>();
 		private readonly Dictionary<uint, List<Message>> messageHistories = new Dictionary<uint, List<Message>>();
 		private static readonly Random rng = new Random(DateTime.Now.Millisecond);
 
@@ -70,7 +71,14 @@ namespace VectorChat.Client_WPF
 			}
 			else
 			{
-				configInfo = new ClientConfig(200, "http://localhost:8080", 540, 960);
+
+				configInfo = new ClientConfig()
+				{
+					messageRequestTime = 200U,
+					serverAddress = "http://localhost:8080",
+					mainWindowHeight = 540,
+					mainWindowWidth = 960
+				};
 				FileWorker.SaveToFile(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json"), configInfo);
 			}
 
@@ -80,7 +88,7 @@ namespace VectorChat.Client_WPF
 
 			messageHistories[0U] = new List<Message>();
 
-			Grid currentUserIcon = DrawRoundedIdenticon(50, Color.FromRgb(135, 163, 191), Color.FromRgb(88, 117, 158), currentUser?.ToString());
+			Grid currentUserIcon = DrawRoundedIdenticon(50U, Color.FromRgb(135, 163, 191), Color.FromRgb(88, 117, 158), currentUser?.ToString());
 			currentUserIcon.HorizontalAlignment = HorizontalAlignment.Right;
 
 			userInfoGrid.Children.Add(currentUserIcon);
@@ -102,7 +110,7 @@ namespace VectorChat.Client_WPF
 		}
 
 		//Sending a post request storing the message to the server
-		private void Send(object sender, RoutedEventArgs e)
+		private async void Send(object sender, RoutedEventArgs e)
 		{
 			if ((connectLabel.Content as string) == "Online")
 			{
@@ -141,8 +149,8 @@ namespace VectorChat.Client_WPF
 						fromID = currentUser.ToString(),
 						groupID = currentGroupID
 					};
-					ClientRequests.PostRequest(configInfo.serverAddress, mes);
 					messageTextBox.Text = string.Empty;
+					await Task.Run(() => ClientRequests.ServerRequest<AuthResponse>($"{configInfo.serverAddress}/api/chat/messages", mes));
 				}
 			}
 		}
@@ -150,16 +158,21 @@ namespace VectorChat.Client_WPF
 		private void MessagesRequest()
 		{
 			DateTime ts = new DateTime();
+			const uint messagesCount = 20U;
 			var recivedMessages = new List<Message>();
 			if (messageHistories[currentGroupID].Count == 0)
 			{
 				ts = DateTime.Now;
-				recivedMessages = ClientRequests.GetRequest(configInfo.serverAddress, currentUser?.nickname, currentUser.userID, currentGroupID, ts, 20);
+				recivedMessages = ClientRequests.ServerRequest<List<Message>>($"{configInfo.serverAddress}/api/chat/messages/" +
+					$"{currentUser?.nickname}/{currentUser.userID}/{currentGroupID}/" +
+					$"{ts.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture)}/{messagesCount}/", null, "GET");
 			}
 			else
 			{
 				ts = messageHistories[currentGroupID][^1].timestamp;
-				recivedMessages = ClientRequests.GetRequest(configInfo.serverAddress, currentUser?.nickname, currentUser.userID, currentGroupID, ts);
+				recivedMessages = ClientRequests.ServerRequest<List<Message>>($"{configInfo.serverAddress}/api/chat/messages/" +
+					$"{currentUser?.nickname}/{currentUser.userID}/{currentGroupID}/" +
+					$"{ts.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture)}", null, "GET");
 			}
 			if (recivedMessages.Count != 0)
 			{
@@ -169,7 +182,6 @@ namespace VectorChat.Client_WPF
 				{
 					messagesList.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => BuildMessageBubble(messagesList, mes, sendingEdge.bottom)));
 				}
-
 				if (onBottom) messagesList.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => messagesScroll.ScrollToBottom()));
 			}
 		}
@@ -198,13 +210,14 @@ namespace VectorChat.Client_WPF
 									connectLabel.Content = "Online";
 									connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(77, 77, 77));
 									SendingButton.IsEnabled = true;
+									i = 0;
 								}
 							}));
 							Task.Delay((int)configInfo.messageRequestTime);
 						}
 						catch
 						{
-							if (i < reconectionCount-1) break;
+							if (i < reconectionCount - 1) break;
 							userInfoGrid.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
 							{
 								connectLabel.Content = "Connect";
@@ -288,7 +301,7 @@ namespace VectorChat.Client_WPF
 			var icon = new Grid();
 			if (_msg.fromID != MessagePhrases.LoginLogoutNotification)
 			{
-				icon = DrawRoundedIdenticon(30, Colors.Transparent, Colors.Transparent, _msg.fromID);
+				icon = DrawRoundedIdenticon(30U, Colors.Transparent, Colors.Transparent, _msg.fromID);
 				vertStack.Children.Add(nickname);
 			}
 			else
@@ -424,15 +437,19 @@ namespace VectorChat.Client_WPF
 		{
 			if (connectLabel.Content as string == "Online" && horizPlusRect.Width == 20)
 			{
-				DoubleAnimation widthAnimation = new DoubleAnimation();
-				widthAnimation.From = horizPlusRect.Width;
-				widthAnimation.To = 0;
-				widthAnimation.Duration = TimeSpan.FromSeconds(0.2);
+				DoubleAnimation widthAnimation = new DoubleAnimation()
+				{
+					From = horizPlusRect.Width,
+					To = 0,
+					Duration = TimeSpan.FromSeconds(0.2)
+				};
 
-				DoubleAnimation heightAnimation = new DoubleAnimation();
-				heightAnimation.From = vertPlusRect.Height;
-				heightAnimation.To = 0;
-				heightAnimation.Duration = TimeSpan.FromSeconds(0.2);
+				DoubleAnimation heightAnimation = new DoubleAnimation()
+				{
+					From = vertPlusRect.Height,
+					To = 0,
+					Duration = TimeSpan.FromSeconds(0.2)
+				};
 
 				horizPlusRect.BeginAnimation(WidthProperty, widthAnimation);
 				vertPlusRect.BeginAnimation(HeightProperty, heightAnimation);
@@ -441,26 +458,32 @@ namespace VectorChat.Client_WPF
 				{
 					await Task.Run(() =>
 					{
-
-						DateTime ts = new DateTime();
 						var recivedMessages = new List<Message>();
-						ts = messageHistories[currentGroupID][0].timestamp;
-						recivedMessages = ClientRequests.GetRequest(configInfo.serverAddress, currentUser?.nickname, currentUser.userID, currentGroupID, ts, 40);
+						const uint messagesCount = 40U;
+						DateTime ts = messageHistories[currentGroupID][0].timestamp;
+
+						recivedMessages = ClientRequests.ServerRequest<List<Message>>($"{configInfo.serverAddress}/api/chat/messages/" +
+					$"{currentUser?.nickname}/{currentUser.userID}/{currentGroupID}/" +
+					$"{ts.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture)}/{messagesCount}", null, "GET");
 						messageHistories[currentGroupID].InsertRange(0, recivedMessages);
 						recivedMessages.Reverse();
 						messagesList.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
 						{
 							if (recivedMessages.Count > 0)
 							{
-								DoubleAnimation widthAnimation = new DoubleAnimation();
-								widthAnimation.From = horizPlusRect.Width;
-								widthAnimation.To = 20;
-								widthAnimation.Duration = TimeSpan.FromSeconds(0.2);
+								DoubleAnimation widthAnimation = new DoubleAnimation()
+								{
+									From = horizPlusRect.Width,
+									To = 20,
+									Duration = TimeSpan.FromSeconds(0.2)
+								};
 
-								DoubleAnimation heightAnimation = new DoubleAnimation();
-								heightAnimation.From = vertPlusRect.Height;
-								heightAnimation.To = 20;
-								heightAnimation.Duration = TimeSpan.FromSeconds(0.2);
+								DoubleAnimation heightAnimation = new DoubleAnimation()
+								{
+									From = vertPlusRect.Height,
+									To = 20,
+									Duration = TimeSpan.FromSeconds(0.2)
+								};
 
 								horizPlusRect.BeginAnimation(WidthProperty, widthAnimation);
 								vertPlusRect.BeginAnimation(HeightProperty, heightAnimation);
@@ -468,19 +491,22 @@ namespace VectorChat.Client_WPF
 								{
 									BuildMessageBubble(messagesList, mes, sendingEdge.top);
 								}
-
 							}
 							else
 							{
-								DoubleAnimation opacityAnimation = new DoubleAnimation();
-								opacityAnimation.From = moreBtn.Opacity;
-								opacityAnimation.To = 0;
-								opacityAnimation.Duration = TimeSpan.FromSeconds(0.4);
+								DoubleAnimation opacityAnimation = new DoubleAnimation()
+								{
+									From = moreBtn.Opacity,
+									To = 0,
+									Duration = TimeSpan.FromSeconds(0.4)
+								};
 
-								ThicknessAnimation marginAnimation = new ThicknessAnimation();
-								marginAnimation.From = moreBtn.Margin;
-								marginAnimation.To = new Thickness(150, 0, 0, 0);
-								marginAnimation.Duration = TimeSpan.FromSeconds(0.4);
+								ThicknessAnimation marginAnimation = new ThicknessAnimation()
+								{
+									From = moreBtn.Margin,
+									To = new Thickness(150, 0, 0, 0),
+									Duration = TimeSpan.FromSeconds(0.4)
+								};
 
 								moreBtn.BeginAnimation(OpacityProperty, opacityAnimation);
 								moreBtn.BeginAnimation(MarginProperty, marginAnimation);
