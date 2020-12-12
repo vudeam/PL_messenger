@@ -148,6 +148,11 @@
 					<Run x:Name="MembersErr" Text="[Refresh error]" Foreground="Transparent"/>
 				</TextBlock>
 			</StackPanel>
+			<Button x:Name="logout" Grid.Column="1" Width="45" Height="50" HorizontalAlignment="Right" Margin="0 0 20 0" Click="logout_Click">
+				<Button.ToolTip>
+					<ToolTip Content="Logout"/>
+				</Button.ToolTip>
+			</Button>
 		</Grid>
 		<Grid Grid.Row="1" Grid.Column="0" Background="#A0B4C8">
 			<Grid.RowDefinitions>

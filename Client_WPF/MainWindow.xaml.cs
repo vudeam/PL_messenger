@@ -46,6 +46,8 @@ namespace VectorChat.Client_WPF
 			InitializeComponent();
 		}
 
+		internal static void DispatcherInvoker(FrameworkElement controlElement, Action action, DispatcherPriority priority = DispatcherPriority.Background) => controlElement.Dispatcher.Invoke(priority, action);
+
 		/// <summary>
 		/// Refreshes information about the textbox.
 		/// Sets the area and size of the textbox based on its content.
@@ -60,29 +62,34 @@ namespace VectorChat.Client_WPF
 
 		private void OnLoad(object sender, RoutedEventArgs e)
 		{
+			messageTextBoxCellStartHeight = messageTextBoxCellHeight.Height.Value;
 			//Loading a configuration file from a local directory if it exists or creating it if it does not exist
-			if (File.Exists(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json")))
+			//if (File.Exists(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json")))
+			try
 			{
 				configInfo = JsonSerializer.Deserialize<ClientConfig>(File.ReadAllText(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json")));
 				if (configInfo.mainWindowHeight > mainWindow.MinHeight && configInfo.mainWindowHeight < mainWindow.MaxHeight)
-					mainWindow.Height = configInfo.mainWindowHeight;
+					Height = configInfo.mainWindowHeight;
 				if (configInfo.mainWindowWidth > mainWindow.MinWidth && configInfo.mainWindowWidth < mainWindow.MaxWidth)
-					mainWindow.Width = configInfo.mainWindowWidth;
+					Width = configInfo.mainWindowWidth;
+				if (configInfo.messageRequestTime < 50U)
+					configInfo.messageRequestTime = 200U;
 			}
-			else
+			catch
 			{
-
 				configInfo = new ClientConfig()
 				{
 					messageRequestTime = 200U,
 					serverAddress = "http://localhost:8080",
 					mainWindowHeight = 540,
-					mainWindowWidth = 960
+					mainWindowWidth = 960,
+					enableFileAuth = false,
+					login = string.Empty,
+					password = string.Empty
 				};
 				FileWorker.SaveToFile(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json"), configInfo);
 			}
 
-			messageTextBoxCellStartHeight = messageTextBoxCellHeight.Height.Value;
 			enterWindow = new EnterWindow(configInfo);
 			OpenEnterWindow();
 
@@ -181,9 +188,9 @@ namespace VectorChat.Client_WPF
 				messageHistories[currentGroup.groupID].AddRange(recivedMessages);
 				foreach (var mes in recivedMessages)
 				{
-					messagesList.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => BuildMessageBubble(messagesList, mes, sendingEdge.bottom)));
+					DispatcherInvoker(messagesList, () => BuildMessageBubble(messagesList, mes, sendingEdge.bottom));
 				}
-				if (onBottom) messagesList.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => messagesScroll.ScrollToBottom()));
+				if (onBottom) DispatcherInvoker(messagesList, () => messagesScroll.ScrollToBottom());
 			}
 		}
 
@@ -204,7 +211,7 @@ namespace VectorChat.Client_WPF
 						try
 						{
 							MessagesRequest();
-							userInfoGrid.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
+							DispatcherInvoker(userInfoGrid, ()=>
 							{
 								if ((connectLabel.Content as string) != "Online")
 								{
@@ -213,13 +220,13 @@ namespace VectorChat.Client_WPF
 									SendingButton.IsEnabled = true;
 									i = 0;
 								}
-							}));
+							});
 							Task.Delay((int)configInfo.messageRequestTime);
 						}
 						catch
 						{
 							if (i < reconectionCount - 1) break;
-							userInfoGrid.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
+							DispatcherInvoker(userInfoGrid, () =>
 							{
 								connectLabel.Content = "Connect";
 								connectLabel.FontWeight = FontWeights.Medium;
@@ -228,7 +235,7 @@ namespace VectorChat.Client_WPF
 								connectRect.Width = connectLabel.ActualWidth;
 								connectLabel.Foreground = new SolidColorBrush(Color.FromRgb(32, 84, 220));
 								SendingButton.IsEnabled = false;
-							}));
+							});
 							break;
 						}
 					}
@@ -357,6 +364,11 @@ namespace VectorChat.Client_WPF
 		{
 			if (enterWindow.ShowDialog() == true)
 			{
+				if (configInfo != enterWindow.configInfo)
+				{
+					configInfo = enterWindow.configInfo;
+					FileWorker.SaveToFile(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json"), configInfo);
+				}
 				currentUser = enterWindow.session.user;
 				currentToken = enterWindow.session.token;
 				groups = enterWindow.startGroups;
@@ -385,7 +397,7 @@ namespace VectorChat.Client_WPF
 		{
 			await Task.Run(() => 
 			{
-				groupInfoGrid.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
+				DispatcherInvoker(groupInfoGrid, () =>
 				{
 					try
 					{
@@ -400,7 +412,7 @@ namespace VectorChat.Client_WPF
 						if (MembersErr.Foreground == Brushes.Transparent)
 							MembersErr.Foreground = Members.Foreground;
 					}
-				}));
+				});
 			});
 		}
 
@@ -503,7 +515,7 @@ namespace VectorChat.Client_WPF
 					$"{ts.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture)}/{messagesCount}", null, "GET");
 						messageHistories[currentGroup.groupID].InsertRange(0, recivedMessages);
 						recivedMessages.Reverse();
-						messagesList.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
+						DispatcherInvoker(messagesList, () =>
 						{
 							if (recivedMessages.Count > 0)
 							{
@@ -549,7 +561,7 @@ namespace VectorChat.Client_WPF
 								moreBtn.Cursor = Cursors.Arrow;
 								moreBtn.IsEnabled = false;
 							}
-						}));
+						});
 					});
 				}
 			}
@@ -605,6 +617,16 @@ namespace VectorChat.Client_WPF
 				{
 				}
 			}
+		}
+
+		private void logout_Click(object sender, RoutedEventArgs e)
+		{
+			configInfo.enableFileAuth = false;
+			FileWorker.SaveToFile(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "config.json"), configInfo);
+			Application.Current.Shutdown();
+			string path = Application.ResourceAssembly.Location;
+			path = path.Remove(path.Length - 3, 3) + "exe";
+			System.Diagnostics.Process.Start(path);
 		}
 	}
 }

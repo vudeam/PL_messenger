@@ -12,6 +12,7 @@
     <None Remove="Assets\SendingBtn-Color.png" />
     <None Remove="Assets\SendingBtn-Gray.png" />
     <None Remove="Assets\SendingBtn-LightGray.png" />
+    <None Remove="Assets\VectorChatLogo.svg" />
     <None Remove="VectorChatLogo.png" />
   </ItemGroup>
 

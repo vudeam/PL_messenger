@@ -1,10 +1,14 @@
-﻿using System.Windows;
+﻿using System;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using System.Collections.Generic;
 using VectorChat.Utilities;
 using VectorChat.Utilities.Credentials;
 using VectorChat.Utilities.ClientRequests;
+
 
 namespace VectorChat.Client_WPF
 {
@@ -13,14 +17,13 @@ namespace VectorChat.Client_WPF
 	/// </summary>
 	public partial class EnterWindow : Window
 	{
-		ClientConfig configInfo;
-
 		public enum AuthRequestType
 		{
 			login,
 			signup
 		};
 
+		internal ClientConfig configInfo;
 		internal (User user, string token) session { get; private set; }
 		internal List<Group> startGroups = new List<Group>();
 
@@ -62,7 +65,7 @@ namespace VectorChat.Client_WPF
 			}
 		}
 
-		private void EnterButton_MouseUp(object sender, MouseButtonEventArgs e)
+		private async void EnterButton_MouseUp(object sender, MouseButtonEventArgs e)
 		{
 			if (string.IsNullOrEmpty(passwordPasswordBox.Password))
 			{
@@ -70,34 +73,56 @@ namespace VectorChat.Client_WPF
 				ErrorLabel.Opacity = 1;
 				return;
 			}
+			configInfo.login = loginTextBox.Text;
+			configInfo.password = passwordPasswordBox.Password;
+			if (autoLoginCheckBox.IsChecked == true)
+				configInfo.enableFileAuth = true;
+			string nickname = nicknameTextBox.Text;
+			loadScreen.Visibility = Visibility.Visible;
 			if ((authButtonGrid.Children[1] as TextBlock).Text.Equals("Log in"))
 			{
-				AuthResponse response = AuthRequest(AuthRequestType.login);
-				switch (response.code)
+				await Task.Run(() =>
 				{
-					case ApiErrCodes.Success:
-						session = (response.usr, response.token);
-						this.DialogResult = true;
-						return;
-					case ApiErrCodes.LoginNotFound:
-						ErrorLabel.Text = response.defaultMessage;
-						ErrorLabel.Opacity = 1;
-						return;
-					case ApiErrCodes.PasswordIncorrect:
-						ErrorLabel.Text = response.defaultMessage;
-						ErrorLabel.Opacity = 1;
-						return;
-					case ApiErrCodes.NoConnection:
-						ErrorLabel.Text = "No connection to server";
-						ErrorLabel.Opacity = 1;
-						return;
-					case ApiErrCodes.Unknown:
-						ErrorLabel.Text = "Damn what you've done!";
-						ErrorLabel.Opacity = 1;
-						return;
-					default:
-						break;
-				}
+					AuthResponse response = AuthRequest(AuthRequestType.login, configInfo.login, configInfo.password, nickname);
+					switch (response.code)
+					{
+						case ApiErrCodes.Success:
+							session = (response.usr, response.token);
+							MainWindow.DispatcherInvoker(mainGrid, () => this.DialogResult = true);
+							return;
+						case ApiErrCodes.LoginNotFound:
+							MainWindow.DispatcherInvoker(mainGrid, () =>
+							{
+								ErrorLabel.Text = response.defaultMessage;
+								ErrorLabel.Opacity = 1;
+							});
+							return;
+						case ApiErrCodes.PasswordIncorrect:
+							MainWindow.DispatcherInvoker(mainGrid, () =>
+							{
+								ErrorLabel.Text = response.defaultMessage;
+								ErrorLabel.Opacity = 1;
+							});
+							return;
+						case ApiErrCodes.NoConnection:
+							MainWindow.DispatcherInvoker(mainGrid, () =>
+							{
+								ErrorLabel.Text = "No connection to server";
+								ErrorLabel.Opacity = 1;
+							});
+							return;
+						case ApiErrCodes.Unknown:
+							MainWindow.DispatcherInvoker(mainGrid, () =>
+							{
+								ErrorLabel.Text = "Damn what you've done!";
+								ErrorLabel.Opacity = 1;
+							});
+							return;
+						default:
+							break;
+					}
+				});
+				loadScreen.Visibility = Visibility.Hidden;
 			}
 			else if ((authButtonGrid.Children[1] as TextBlock).Text.Equals("Sign up"))
 			{
@@ -107,29 +132,41 @@ namespace VectorChat.Client_WPF
 					ErrorLabel.Opacity = 1;
 					return;
 				}
-				AuthResponse response = AuthRequest(AuthRequestType.signup);
-				switch (response.code)
+				await Task.Run(() =>
 				{
-					case ApiErrCodes.Success:
-						session = (response.usr, response.token);
-						AuthRequest(AuthRequestType.login);
-						this.DialogResult = true;
-						return;
-					case ApiErrCodes.LoginTaken:
-						ErrorLabel.Text = "Entered login is already taken";
-						ErrorLabel.Opacity = 1;
-						return;
-					case ApiErrCodes.NoConnection:
-						ErrorLabel.Text = "No connection to server";
-						ErrorLabel.Opacity = 1;
-						return;
-					case ApiErrCodes.Unknown:
-						ErrorLabel.Text = "Damn what you've done!";
-						ErrorLabel.Opacity = 1;
-						return;
-					default:
-						break;
-				}
+					AuthResponse response = AuthRequest(AuthRequestType.signup, configInfo.login, configInfo.password, nickname);
+					switch (response.code)
+					{
+						case ApiErrCodes.Success:
+							session = (response.usr, response.token);
+							AuthRequest(AuthRequestType.login, configInfo.login, configInfo.password, nickname);
+							MainWindow.DispatcherInvoker(mainGrid, () => this.DialogResult = true);
+							return;
+						case ApiErrCodes.LoginTaken:
+							MainWindow.DispatcherInvoker(mainGrid, () => {
+								ErrorLabel.Text = "Entered login is already taken";
+								ErrorLabel.Opacity = 1;
+							});
+							return;
+						case ApiErrCodes.NoConnection:
+							MainWindow.DispatcherInvoker(mainGrid, () =>
+							{
+								ErrorLabel.Text = "No connection to server";
+								ErrorLabel.Opacity = 1;
+							});
+							return;
+						case ApiErrCodes.Unknown:
+							MainWindow.DispatcherInvoker(mainGrid, () =>
+							{
+								ErrorLabel.Text = "Damn what you've done!";
+								ErrorLabel.Opacity = 1;
+							});
+							return;
+						default:
+							break;
+					}
+				});
+				loadScreen.Visibility = Visibility.Hidden;
 			}
 		}
 
@@ -156,21 +193,21 @@ namespace VectorChat.Client_WPF
 			}
 		}
 
-		private AuthResponse AuthRequest(AuthRequestType type)
+		private AuthResponse AuthRequest(AuthRequestType type, string _login, string _password, string _nickname)
 		{
-			string _nickname;
+			string nickname;
 			if (type == AuthRequestType.login)
-				_nickname = null;
+				nickname = null;
 			else
-				_nickname = nicknameTextBox.Text;
+				nickname = _nickname;
 
 			var newAccount = new SignupRequest()
 			{
-				nickname = _nickname,
+				nickname = nickname,
 				acc = new Account()
 				{
-					login = loginTextBox.Text,
-					password = passwordPasswordBox.Password
+					login = _login,
+					password = _password
 				}
 			};
 			AuthResponse response;
@@ -199,6 +236,19 @@ namespace VectorChat.Client_WPF
 			if (e.Key.Equals(Key.Enter))
 			{
 				EnterButton_MouseUp(authButtonGrid.Children[1], null);
+			}
+		}
+
+		private void Window_Loaded(object sender, RoutedEventArgs e)
+		{
+			if (configInfo.enableFileAuth)
+			{
+				autoLoginCheckBox.IsChecked = true;
+				TextBox_GotFocus(loginTextBox, null);
+				loginTextBox.Text = configInfo.login;
+				PasswordBox_GotFocus(passwordPasswordBox, null);
+				passwordPasswordBox.Password = configInfo.password;
+				EnterButton_MouseUp(null, null);
 			}
 		}
 	}
