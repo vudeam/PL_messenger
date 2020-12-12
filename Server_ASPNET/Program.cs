@@ -97,6 +97,11 @@ namespace VectorChat.ServerASPNET
 				{
 					string messagesFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "MessagesStorage", $"groupID{gID}");
 					Directory.CreateDirectory(messagesFolderPath);
+					// create emoty messages storage if not exists
+					if (!File.Exists(Path.Combine(messagesFolderPath, "messages.json")))
+					{
+						FileWorker.SaveToFile(Path.Combine(messagesFolderPath, "messages.json"), new List<Message>());
+					}
 				}
 			}
 			catch (Exception ex)
