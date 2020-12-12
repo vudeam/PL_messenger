@@ -1,12 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Net;
-using System.Text.Json;
-using System.Globalization;
 using System.Collections.Generic;
 using Terminal.Gui;
 using VectorChat.Utilities;
 using VectorChat.Utilities.Credentials;
+using VectorChat.Utilities.ClientRequests;
 
 namespace VectorChat.Client_Console
 {
@@ -36,10 +34,10 @@ namespace VectorChat.Client_Console
 					new MenuItem("_Signup", NStack.ustring.Empty, () => {}), // Add signup callback
 					new MenuItem("Load _up", NStack.ustring.Empty, () =>
 					{
-						List<Message> received = ServerRequest<List<Message>>(
+						List<Message> received = ClientRequests.ServerRequest<List<Message>>(
 							$"{config.serverAddress}/api/chat/messages/" +
 							$"{Session.user.nickname}/{Session.user.userID}/{0}/" +
-							$"{DateTime.Now.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture)}/{21}",
+							$"{DateTime.Now.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture)}/{21}",
 							null,
 							"GET"
 						);
@@ -48,10 +46,10 @@ namespace VectorChat.Client_Console
 					}),
 					new MenuItem("Load _down", NStack.ustring.Empty, () =>
 					{
-						List<Message> received = ServerRequest<List<Message>>(
+						List<Message> received = ClientRequests.ServerRequest<List<Message>>(
 							$"{config.serverAddress}/api/chat/messages/" +
 							$"{Session.user.nickname}/{Session.user.userID}/{0}/" +
-							$"{DateTime.Now.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture)}",
+							$"{DateTime.Now.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture)}",
 							null,
 							"GET"
 						);
@@ -128,7 +126,7 @@ namespace VectorChat.Client_Console
 			{
 				// if (NStack.ustring.IsNullOrEmpty(messageTextField.Text)) return;
 				if (NStack.ustring.IsNullOrEmpty(msgTextView.Text)) return;
-				AuthResponse r = ServerRequest<AuthResponse>(
+				AuthResponse r = ClientRequests.ServerRequest<AuthResponse>(
 					$"{config.serverAddress}/api/chat/messages",
 					new Message()
 					{
@@ -172,25 +170,6 @@ namespace VectorChat.Client_Console
 			}
 		}
 
-		/// <summary></summary>
-		/// <typeparam name="TResponse">Type which response will be deserialized to</typeparam>
-		/// <returns>Respone of type <typeparamref name="TResponse"/> deserialized from JSON</returns>
-		private static TResponse ServerRequest<TResponse>(string url, object body, string method = "POST")
-		{
-			HttpWebRequest webRequest = WebRequest.CreateHttp(url);
-			webRequest.Method = method;
-			webRequest.ContentType = "application/json";
-			if (body != null) using (StreamWriter writer = new StreamWriter(webRequest.GetRequestStream()))
-			{
-				writer.Write(JsonSerializer.Serialize(body));
-			}
-			HttpWebResponse webResponse = (HttpWebResponse)webRequest.GetResponse();
-			using (StreamReader reader = new StreamReader(webResponse.GetResponseStream()))
-			{
-				return JsonSerializer.Deserialize<TResponse>(reader.ReadToEnd());
-			}
-		}
-
 		private static void LoadConfig()
 		{
 			if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config.json")))
@@ -203,7 +182,7 @@ namespace VectorChat.Client_Console
 					AuthResponse r = new AuthResponse() { code = ApiErrCodes.Unknown };
 					try
 					{
-						r = ServerRequest<AuthResponse>(
+						r = ClientRequests.ServerRequest<AuthResponse>(
 							$"{config.serverAddress}/api/auth/login",
 							new SignupRequest() { acc = new Account() { login = config.login, password = config.password} }
 						);

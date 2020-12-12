@@ -1,10 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using VectorChat.Utilities.Credentials;
 
 namespace VectorChat.Utilities.ClientRequests
 {
@@ -19,9 +15,9 @@ namespace VectorChat.Utilities.ClientRequests
 			webRequest.Method = method;
 			webRequest.ContentType = "application/json";
 			if (body != null) using (StreamWriter writer = new StreamWriter(webRequest.GetRequestStream()))
-				{
-					writer.Write(JsonSerializer.Serialize(body));
-				}
+			{
+				writer.Write(JsonSerializer.Serialize(body));
+			}
 			HttpWebResponse webResponse = (HttpWebResponse)webRequest.GetResponse();
 			using (StreamReader reader = new StreamReader(webResponse.GetResponseStream()))
 			{
