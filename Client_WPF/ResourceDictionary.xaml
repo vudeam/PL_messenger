@@ -6,6 +6,7 @@
 	<ImageBrush x:Key="LightGrayArrow" ImageSource="Assets/SendingBtn-LightGray.png"/>
 	<ImageBrush x:Key="GrayArrow" ImageSource="Assets/SendingBtn-Gray.png"/>
 	<ImageBrush x:Key="ColorArrow" ImageSource="Assets/SendingBtn-Color.png"/>
+	<ImageBrush x:Key="LogoutMask" ImageSource="Assets/logoutMask.png"/>
 	<LinearGradientBrush x:Key="ShadowBorder" EndPoint="0.5,1" StartPoint="0.5,0">
 		<GradientStop Color="#FFA3AEB9"/>
 		<GradientStop Color="Transparent" Offset="0.9"/>
@@ -92,6 +93,24 @@
 						</Trigger>
 						<Trigger Property="IsEnabled" Value="false">
 							<Setter Property="Background" TargetName="border" Value="{StaticResource LightGrayArrow}"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<Style x:Key="LogoutButton" TargetType="{x:Type Button}" BasedOn="{StaticResource TransparentButton}">
+		<Setter Property="Background" Value="{StaticResource TransparentBrush}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TransparentBrush}"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type Button}">
+					<Border x:Name="border" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" SnapsToDevicePixels="true">
+						<ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="Center" Margin="1" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center"/>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="true">
+							<Setter Property="Background" TargetName="border" Value="{StaticResource LogoutMask}"/>
 						</Trigger>
 					</ControlTemplate.Triggers>
 				</ControlTemplate>
