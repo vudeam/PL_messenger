@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
@@ -12,24 +11,27 @@ using VectorChat.Utilities.Credentials;
 
 namespace VectorChat.ServerASPNET.Controllers
 {
-	/// <summary>
-	/// Route: <c>/api/auth</c>
-	/// </summary>
+	/// <remarks>Route: <c>/api/auth</c></remarks>
 	[Route("api/[controller]")]
 	[ApiController]
 	public class AuthController : ControllerBase
 	{
-		private static readonly ILogger consoleLogger = LoggerFactory.Create(logBuilder =>
+		private static readonly ILogger consoleLogger;
+		private static readonly ILogger fileLogger;
+		private static readonly PasswordHasher<Account> hasher;
+		private static readonly Random rng;
+
+		static AuthController()
 		{
-			logBuilder.AddConsole();
-			logBuilder.AddDebug();
-		}).CreateLogger<AuthController>();
-
-		public static readonly ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "logs", "AuthLog.log"));
-
-		private static readonly PasswordHasher<Account> hasher = new PasswordHasher<Account>();
-
-		private static readonly Random rng = new Random(DateTime.Now.Millisecond);
+			rng = new Random(DateTime.Now.Millisecond);
+			hasher = new PasswordHasher<Account>();
+			fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "logs", "AuthLog.log"));
+			consoleLogger = LoggerFactory.Create(logBuilder =>
+			{
+				logBuilder.AddConsole();
+				logBuilder.AddDebug();
+			}).CreateLogger<AuthController>();
+		}
 
 		/// <remarks>Route: <c>POST signup</c></remarks>
 		[HttpPost("signup")]
@@ -169,7 +171,7 @@ namespace VectorChat.ServerASPNET.Controllers
 		/// <param name="input">The string to compute hash from</param>
 		/// <param name="encoding">Encoding of the provided string</param>
 		[NonAction]
-		private byte[] ComputeHash(string input, Encoding encoding)
+		private static byte[] ComputeHash(string input, Encoding encoding)
 		{
 			return (SHA256.Create()).ComputeHash(encoding.GetBytes(input));
 		}
@@ -182,14 +184,12 @@ namespace VectorChat.ServerASPNET.Controllers
 		/// <param name="desiredNickname">The nickname which is searched in <paramref name="_users"/></param>
 		/// <returns>Unique userID in the provided collection</returns>
 		[NonAction]
-		private uint ProvideUserID(List<User> _users, string desiredNickname)
+		private static uint ProvideUserID(List<User> _users, string desiredNickname)
 		{
 			if (_users.Exists(i => i.nickname == desiredNickname))
 			{
 				List<User> takenIDs = _users.FindAll(i => i.nickname == desiredNickname);
 				takenIDs.Sort((user1, user2) => user1.userID.CompareTo(user2.userID));
-				//Console.WriteLine("Sorted users:");
-				//foreach (var u in takenIDs) Console.WriteLine(u);
 
 				return takenIDs[^1].userID + 1; // (ID with the biggest value) + 1
 			}

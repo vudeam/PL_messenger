@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using VectorChat.Utilities;
@@ -12,9 +11,7 @@ using VectorChat.Utilities.Credentials;
 
 namespace VectorChat.ServerASPNET.Controllers
 {
-	/// <summary>
-	/// Route: <c>/api/chat</c>
-	/// </summary>
+	/// <remarks>Route: <c>/api/chat</c></remarks>
 	[Route("api/[controller]")]
 	[ApiController]
 	public class ChatController : ControllerBase
@@ -23,15 +20,20 @@ namespace VectorChat.ServerASPNET.Controllers
 		/// Triggered by <see cref="VectorChat.ServerASPNET.Controllers.ChatController.PostMessage(Message)"/> 
 		/// when a new message is added
 		/// </summary>
-		private static event MessageEventHandler MessageAdded = OnMessageAdded;
+		private static event MessageEventHandler MessageAdded;
+		private static readonly ILogger consoleLogger;
+		private static readonly ILogger fileLogger;
 
-		private static readonly ILogger consoleLogger = LoggerFactory.Create(logBuilder =>
+		static ChatController()
 		{
-			logBuilder.AddConsole();
-			logBuilder.AddDebug();
-		}).CreateLogger<ChatController>();
-
-		private static readonly ILogger fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "logs", "ChatLog.log"));
+			MessageAdded = OnMessageAdded;
+			fileLogger = new FileLogger(Path.Combine(Directory.GetCurrentDirectory(), "logs", "ChatLog.log"));
+			consoleLogger = LoggerFactory.Create(logBuilder =>
+			{
+				logBuilder.AddConsole();
+				logBuilder.AddDebug();
+			}).CreateLogger<ChatController>();
+		}
 
 		/// <summary>
 		/// Get messages in the period from <paramref name="ts"/> to <see cref="DateTime.Now"/><br/>
@@ -39,7 +41,7 @@ namespace VectorChat.ServerASPNET.Controllers
 		/// <remarks>Route: <c>GET messages/{nickname}/{userID}/{groupID}/{ts}</c></remarks>
 		[HttpGet("messages/{nick}/{uID}/{gID}/{ts}")]
 		[Produces("application/json")]
-		public IActionResult GetMessagesAfterTs(string nick, uint uID, uint gID, DateTime ts)
+		public async Task<IActionResult> GetMessagesAfterTs(string nick, uint uID, uint gID, DateTime ts)
 		{
 			#region Logging
 			if (Server.config.EnableFileLogging)
@@ -58,16 +60,14 @@ namespace VectorChat.ServerASPNET.Controllers
 			);
 			#endregion
 
-			List<Message> response = new List<Message>();
-
-			if (!Server.CheckUserRegistration($"{nick}#{uID}")) return Ok(response);
+			if (!Server.CheckUserRegistration($"{nick}#{uID}")) return Ok(new List<Message>());
 
 			if (Server.groupsStorage.ContainsKey(gID)) // found requested group
 			{
 				if (Server.groupsStorage[gID].group.members.Exists(u => u == new User(nick, uID))) // found group member
 				{
 					DateTime mark = Server.groupsStorage[gID].messages.Count == 0 ? DateTime.Now : Server.groupsStorage[gID].messages.Min(m => m.timestamp);
-					// if needed messages are already loaded to a file
+					// if needed messages are already loaded to a file then load from that file
 					if (ts < mark)
 					{
 						List<Message> reallyAllMessages = Server.LoadGropMessages(gID);
@@ -80,7 +80,8 @@ namespace VectorChat.ServerASPNET.Controllers
 									   orderby msg.timestamp
 									   select msg;
 
-						response = new List<Message>(messages);
+						//response = new List<Message>(messages);
+						return await Task.Run(() => Ok(new List<Message>(messages)));
 					}
 					else
 					{
@@ -90,20 +91,13 @@ namespace VectorChat.ServerASPNET.Controllers
 									   orderby msg.timestamp
 									   select msg;
 
-						response = new List<Message>(messages);
+						//response = await Task.Run(() => new List<Message>(messages));
+						return await Task.Run(() => Ok(new List<Message>(messages)));
 					}
-
-					if (Server.config.EnableVerboseConsole && response.Count > 0)
-					{
-						string s = $"Selected {response.Count} messages:" + Environment.NewLine;
-						foreach (Message item in response) s += item.ToString() + Environment.NewLine;
-						consoleLogger.Log(LogLevel.Information, s);
-					}
-
 				}
 			}
-			
-			return Ok(response);
+
+			return Ok(new List<Message>());
 		}
 
 		/// <summary>
@@ -112,7 +106,7 @@ namespace VectorChat.ServerASPNET.Controllers
 		/// <remarks>Route: <c>GET messages/{nickname}/{userID}/{groupID}/{ts}/{count}</c></remarks>
 		[HttpGet("messages/{nick}/{uID}/{gID}/{ts}/{count}")]
 		[Produces("application/json")]
-		public IActionResult GetCountMessagesBeforeTs(string nick, uint uID, uint gID, DateTime ts, int count)
+		public async Task<IActionResult> GetCountMessagesBeforeTs(string nick, uint uID, uint gID, DateTime ts, int count)
 		{
 			#region Logging
 			if (Server.config.EnableFileLogging)
@@ -130,9 +124,7 @@ namespace VectorChat.ServerASPNET.Controllers
 			);
 			#endregion
 
-			List<Message> response = new List<Message>();
-
-			if (!Server.CheckUserRegistration($"{nick}#{uID}")) return Ok(response);
+			if (!Server.CheckUserRegistration($"{nick}#{uID}")) return Ok(new List<Message>());
 
 			if (Server.groupsStorage.ContainsKey(gID)) // found requested group
 			{
@@ -155,7 +147,8 @@ namespace VectorChat.ServerASPNET.Controllers
 										select msg)
 										.TakeLast(count);
 
-						response = new List<Message>(messages);
+						//response = new List<Message>(messages);
+						return await Task.Run(() => Ok(new List<Message>(messages)));
 					}
 					else // act as normal and select from RAM
 					{
@@ -165,20 +158,13 @@ namespace VectorChat.ServerASPNET.Controllers
 										select msg)
 										.TakeLast(count);
 
-						response = new List<Message>(messages);
+						//response = new List<Message>(messages);
+						return await Task.Run(() => Ok(new List<Message>(messages)));
 					}
-
-					if (Server.config.EnableVerboseConsole && response.Count > 0)
-					{
-						string s = $"Selected {response.Count} messages:" + Environment.NewLine;
-						foreach (Message item in response) s += item.ToString() + Environment.NewLine;
-						consoleLogger.Log(LogLevel.Information, s);
-					}
-
 				}
 			}
 
-			return Ok(response);
+			return Ok(new List<Message>());
 		}
 
 		/// <summary>
@@ -391,166 +377,6 @@ namespace VectorChat.ServerASPNET.Controllers
 
 		}
 
-		#endregion
-
-		#region Old methods
-		/*
-		/// <summary>
-		/// GET messages
-		/// </summary>
-		[HttpGet("messages")]
-		[Produces("application/json")]
-		public IActionResult GetAllMessages()
-		{
-			//fileLogger.Log(
-			//	LogLevel.Information,
-			//	"{0,6} {1} {2}, output {3} message(-s)",
-			//	this.Request.Method,
-			//	this.Response.StatusCode,
-			//	this.Request.Path,
-			//	messages.Count
-			//);
-			consoleLogger.Log(LogLevel.Information, "{0,6} {1} {2}, output {3} message(-s)",
-				this.Request.Method,
-				this.Response.StatusCode,
-				this.Request.Path,
-				messages.Count
-			);
-
-			return Ok(messages);
-		}
-
-		/// <summary>
-		/// POST messages
-		/// </summary>
-		[HttpPost("messages")]
-		public IActionResult PostMessage([FromBody] Message IncomingMessage)
-		{
-			messages.Add(IncomingMessage);
-
-			//fileLogger.Log(
-			//	LogLevel.Information,
-			//	"{0,6} {1} {2}, got Message: {3}",
-			//	this.Request.Method,
-			//	this.Response.StatusCode,
-			//	this.Request.Path,
-			//	messages[messages.Count - 1].ToString()
-			//);
-			consoleLogger.Log(LogLevel.Information, "{0,6} {1} {2}, got Message: {3}",
-				this.Request.Method,
-				this.Response.StatusCode,
-				this.Request.Path,
-				messages[messages.Count - 1].ToString()
-			);
-
-			return Ok(messages.Count);
-		}
-
-		/// <summary>
-		/// GET welcome
-		/// </summary>
-		[HttpGet("welcome")]
-		public IActionResult WelcomeMessage()
-		{
-			//fileLogger.Log(
-			//	LogLevel.Information,
-			//	"{0,6} {1} {2}",
-			//	this.Request.Method,
-			//	this.Response.StatusCode,
-			//	this.Request.Path
-			//);
-			consoleLogger.Log(
-				LogLevel.Information,
-				"{0,6} {1} {2}",
-				this.Request.Method,
-				this.Response.StatusCode,
-				this.Request.Path
-			);
-
-			messages.Add(new Message() { Content = "Hello", FromID = "id0", Timestamp = DateTime.Now });
-
-			return Ok("Hello there, General Kenobi");
-		}
-
-		/// <summary>
-		/// GET welcome/{_name}
-		/// </summary>
-		[HttpGet("welcome/{_name}")]
-		[Produces("application/json")]
-		public IActionResult WelcomeMessage(String _name)
-		{
-			//fileLogger.Log(
-			//	LogLevel.Information,
-			//	"{0,6} {1} {2}",
-			//	this.Request.Method,
-			//	this.Response.StatusCode,
-			//	this.Request.Path
-			//);
-			consoleLogger.Log(
-				LogLevel.Information,
-				"{0,6} {1} {2}",
-				this.Request.Method,
-				this.Response.StatusCode,
-				this.Request.Path
-			);
-
-			messages.Add(new Message() { Content = $"Hello, {_name}", FromID = "id0", Timestamp = DateTime.Now });
-
-			return Ok($"Welcome, {_name}");
-		}
-
-		/// <summary>
-		/// GET welcome/{_name}
-		/// </summary>
-		[HttpGet("welcome/{_name}/{_referer}")]
-		[Produces("application/json")]
-		public IActionResult WelcomeReferer(String _name, String _referer)
-		{
-			//fileLogger.Log(
-			//	LogLevel.Information,
-			//	"{0,6} {1} {2}",
-			//	this.Request.Method,
-			//	this.Response.StatusCode,
-			//	this.Request.Path
-			//);
-			consoleLogger.Log(
-				LogLevel.Information,
-				"{0,6} {1} {2}",
-				this.Request.Method,
-				this.Response.StatusCode,
-				this.Request.Path
-			);
-
-			messages.Add(new Message() { Content = $"Hello, {_name} from {_referer}!", FromID = "id0", Timestamp = DateTime.Now });
-
-			return Ok($"Welcome, {_name} from {_referer}!");
-		}
-
-		/// <summary>
-		/// POST reauestBody
-		/// </summary>
-		/// <param name="value">Request body (of type <c>int</c>), serialized in JSON</param>
-		[HttpPost("requestBody")]
-		public IActionResult OutputRequest([FromBody] int value)
-		{
-			//fileLogger.Log(
-			//	LogLevel.Information,
-			//	"{0,6} {1} {2} :{3}",
-			//	this.Request.Method,
-			//	this.Response.StatusCode,
-			//	this.Request.Path,
-			//	value.ToString()
-			//);
-			consoleLogger.Log(LogLevel.Information, "{0,6} {1} {2} :{3}",
-				this.Request.Method,
-				this.Response.StatusCode,
-				this.Request.Path,
-				value.ToString()
-			);
-
-			return Ok(value.ToString());
-		}
-		*/
 		#endregion
 	}
 }

@@ -35,7 +35,7 @@ namespace VectorChat.ServerASPNET
 		/// <item>Handler for default (or incorrect) route request</item>
 		/// </list>
 		/// </summary>
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime, ILogger<Startup> logger)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
 		{
 			if (env.IsDevelopment())
 			{
@@ -87,7 +87,7 @@ namespace VectorChat.ServerASPNET
 				endpoints.MapControllers();
 			});
 
-			app.Run(async (context) =>
+			app.Run(async context =>
 			{
 				context.Response.StatusCode = StatusCodes.Status404NotFound;
 				await context.Response.WriteAsync("<h1>404 Not Found</h1>");
