@@ -99,7 +99,7 @@
 			</StackPanel>
 		</StackPanel>
 		<Grid x:Name="loadScreen" Grid.RowSpan="2" Visibility="Hidden">
-			<Rectangle Opacity="0.3" Width="205" Height="50" RadiusX="25" RadiusY="25" Fill="Black"/>
+			<Rectangle Opacity="0.3" Fill="Black"/>
 			<TextBlock Text="Connecting..." Foreground="#FFF7F7F7" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="30" FontWeight="Medium" Margin="0 0 0 5"/>
 		</Grid>
 	</Grid>

@@ -26,7 +26,7 @@ namespace VectorChat.Client_WPF
 	{
 		private ClientConfig configInfo;
 		EnterWindow enterWindow;
-		private readonly int maxLines = 5;
+		private readonly int maxLines = 6;
 		private double messageTextBoxCellStartHeight;
 		private User currentUser;
 		private string currentToken;
@@ -54,13 +54,13 @@ namespace VectorChat.Client_WPF
 		/// </summary>
 		private void ReloadTextBoxHeight(TextBox textBox, RowDefinition gridCellHeight, double gridCellStartHeight, int maxLines)
 		{
-			if (textBox.LineCount < maxLines && IsLoaded)
+			if (textBox.LineCount <= maxLines && IsLoaded)
 			{
 				gridCellHeight.Height = new GridLength(gridCellStartHeight + (textBox.LineCount - 1) * (textBox.FontSize + 4));
 			}
 			if (textBox.LineCount > maxLines)
 			{
-				gridCellHeight.Height = new GridLength(gridCellStartHeight + maxLines * (textBox.FontSize + 4));
+				gridCellHeight.Height = new GridLength(gridCellStartHeight + (maxLines - 1) * (textBox.FontSize + 4));
 			}
 		}
 
@@ -364,6 +364,9 @@ namespace VectorChat.Client_WPF
 			(messagesArea.Children[end] as Grid).Margin = new Thickness(10, 0, 10, 5);
 		}
 
+		/// <summary>
+		///	Opens the authentication window. Processes the data received from there
+		/// </summary>
 		private void OpenEnterWindow()
 		{
 			if (enterWindow.ShowDialog() == true)
@@ -387,6 +390,9 @@ namespace VectorChat.Client_WPF
 			}
 		}
 
+		/// <summary>
+		/// Displays information about the current group in the GUI
+		/// </summary>
 		private void SetGroup(Group currentGroup)
 		{
 			groupName.Text = $"{currentGroup.name} #{currentGroup.groupID}";
@@ -397,6 +403,9 @@ namespace VectorChat.Client_WPF
 			RefreshUsersCount(currentGroup);
 		}
 
+		/// <summary>
+		///	Refreshes information about the number of members in the current group in the GUI
+		/// </summary>
 		private async void RefreshUsersCount(Group currentGroup)
 		{
 			await Task.Run(() => 
@@ -583,14 +592,7 @@ namespace VectorChat.Client_WPF
 		{
 			if (e.Key == Key.Enter)
 			{
-				if (Keyboard.Modifiers == ModifierKeys.Control)
-				{
-					e.Handled = false;
-					int pos = messageTextBox.SelectionStart;
-					messageTextBox.Text = messageTextBox.Text.Insert(messageTextBox.SelectionStart, Environment.NewLine);
-					messageTextBox.SelectionStart = pos + 1;
-				}
-				else if (Keyboard.Modifiers != ModifierKeys.Control)
+				if (Keyboard.Modifiers == ModifierKeys.None)
 				{
 					e.Handled = true;
 					Send(SendingButton, null);

@@ -59,7 +59,7 @@ namespace VectorChat.Utilities
 			" disconnected from the group",
 			" disconnected",
 			" left us",
-			", said: mr.Stark i don't feel good...",
+			", said: Mr.Stark I don't feel good...",
 			" vanished",
 			" disappeared"
 		};

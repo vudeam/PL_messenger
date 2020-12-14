@@ -1,9 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
-using System.Windows.Threading;
 using System.Collections.Generic;
 using VectorChat.Utilities;
 using VectorChat.Utilities.Credentials;
@@ -65,6 +63,9 @@ namespace VectorChat.Client_WPF
 			}
 		}
 
+		/// <summary>
+		/// Event handler for login/sigup
+		/// </summary>
 		private async void EnterButton_MouseUp(object sender, MouseButtonEventArgs e)
 		{
 			if (string.IsNullOrEmpty(passwordPasswordBox.Password))

@@ -6,7 +6,7 @@
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:Client_WPF"
 		mc:Ignorable="d"
-		Title="Vector Chat" Height="540" Width="960" MinHeight="400" MinWidth="800" MaxHeight="5000" MaxWidth="5000"
+		Title="Vector Chat" Height="540" Width="960" MinHeight="430" MinWidth="800" MaxHeight="5000" MaxWidth="5000"
 		Loaded="OnLoad" WindowStartupLocation="CenterScreen" SizeChanged="Window_SizeChanged" Closing="mainWindow_Closing">
 	<Grid>
 		<Grid.RowDefinitions>
@@ -57,12 +57,13 @@
 					Cursor="Hand"
 					Grid.Row="1"
 					IsDefault="False"
-					Height="26"
-					Margin="0,0,59,28" 
+					Height="30"
+					Width="41"
+					Margin="0 0 50 27" 
 					Click="Send"
 					VerticalAlignment="Bottom"
 					HorizontalAlignment="Right"
-					Width="67" RenderTransformOrigin="0.5,0.5">
+					RenderTransformOrigin="0.5,0.5">
 				<Button.RenderTransform>
 					<TransformGroup>
 						<ScaleTransform ScaleY="-1"/>
@@ -83,7 +84,7 @@
 					 Text=""
 					 MaxLength="4096"
 					 Cursor="IBeam"
-					 Margin="40,20,155,20"
+					 Margin="40,20,110,20"
 					 Padding="10,10,15,10"
 					 FontSize="14"
 					 AcceptsReturn="True"
@@ -109,7 +110,6 @@
 						x:Name="nicknameLabel"
 						Content="Nickname"
 						Padding="5 5 0 0"
-						Foreground="Black"
 						FontSize="16"/>
 					<Label
 						x:Name="idLabel"
@@ -175,6 +175,7 @@
 				<RowDefinition Height="60"/>
 				<RowDefinition Height="1*"/>
 			</Grid.RowDefinitions>
+			<StackPanel x:Name="A" Grid.Row="1" Margin="15"></StackPanel>
 		</Grid>
 	</Grid>
 </Window>
