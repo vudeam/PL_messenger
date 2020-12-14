@@ -71,6 +71,7 @@ namespace VectorChat.ServerASPNET
 			{
 				consoleLogger.Log(LogLevel.Warning, "Loading config.json ...");
 				LoadConfig();
+				if (args.Length == 1) config.Port = args[0];
 
 				consoleLogger.Log(LogLevel.Warning, "Loading Users storage ...");
 				LoadUsersStorage(Path.Combine(Directory.GetCurrentDirectory(), "usersStorage.json"));
@@ -182,7 +183,7 @@ namespace VectorChat.ServerASPNET
 					Port = "8080",
 					EnableFileLogging = false,
 					EnableVerboseConsole = false,
-					StoredMessagesLimit = 1000
+					StoredMessagesLimit = 50
 				};
 				if (config.EnableFileLogging)
 				{
