@@ -101,7 +101,7 @@ namespace VectorChat.ServerASPNET.Controllers
 		}
 
 		/// <summary>
-		/// Get <paramref name="count"/> previous messages from <paramref name="ts"/><br/>
+		/// Get <paramref name="count"/> previous (older) messages from <paramref name="ts"/><br/>
 		/// </summary>
 		/// <remarks>Route: <c>GET messages/{nickname}/{userID}/{groupID}/{ts}/{count}</c></remarks>
 		[HttpGet("messages/{nick}/{uID}/{gID}/{ts}/{count}")]

@@ -9,7 +9,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server_ASPNET", "Server_ASP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilities", "Utilities\Utilities.csproj", "{9CADF8DB-E8C5-4DBE-90CB-511B5DE9B6BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client_Console", "Client_Console\Client_Console.csproj", "{6A50A800-E75D-48C9-9CB1-AD5540760313}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client_Console", "Client_Console\Client_Console.csproj", "{6A50A800-E75D-48C9-9CB1-AD5540760313}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{73451C10-D462-4D4E-B5BA-D1CDC0097C99}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
