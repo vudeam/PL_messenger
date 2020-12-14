@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <None Remove="Assets\little-arrow.png" />
+    <None Remove="Assets\logoutMask.png" />
     <None Remove="Assets\SendingBtn-Color.png" />
     <None Remove="Assets\SendingBtn-Gray.png" />
     <None Remove="Assets\SendingBtn-LightGray.png" />
@@ -27,6 +28,7 @@
 
   <ItemGroup>
     <Resource Include="Assets\little-arrow.png" />
+    <Resource Include="Assets\logoutMask.png" />
     <Resource Include="Assets\SendingBtn-Color.png" />
     <Resource Include="Assets\SendingBtn-Gray.png" />
     <Resource Include="Assets\SendingBtn-LightGray.png" />

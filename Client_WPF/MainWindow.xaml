@@ -20,7 +20,7 @@
 		<Grid Grid.Row="1" Grid.Column="1">
 			<Grid.RowDefinitions >
 				<RowDefinition Height="1*"/>
-				<RowDefinition x:Name="messageTextBoxCellHeight" Height="85"/>
+				<RowDefinition x:Name="messageTextBoxCellHeight" Height="84"/>
 			</Grid.RowDefinitions>
 			<ScrollViewer x:Name="messagesScroll" Grid.Row="0" VerticalScrollBarVisibility="Visible">
 				<StackPanel x:Name="messagesList" HorizontalAlignment="Left" Width="1000" VerticalAlignment="Bottom" Background="{x:Null}">
@@ -42,8 +42,8 @@
 			<Rectangle Grid.Row="1" Fill="#FFC5D2E0" Height="1" VerticalAlignment="Top"/>
 			<Rectangle Grid.Row="1" 
 					   Margin="30 20 30 20"
-					   RadiusX="20"
-					   RadiusY="20"
+					   RadiusX="22"
+					   RadiusY="22"
 					   Stroke="#FFC6D2DE"
 					   Fill="White"/>
 			<Label x:Name="enterSign"
@@ -58,11 +58,19 @@
 					Grid.Row="1"
 					IsDefault="False"
 					Height="26"
-					Margin="0 0 60 28" 
+					Margin="0,0,59,28" 
 					Click="Send"
 					VerticalAlignment="Bottom"
 					HorizontalAlignment="Right"
-					Width="65">
+					Width="67" RenderTransformOrigin="0.5,0.5">
+				<Button.RenderTransform>
+					<TransformGroup>
+						<ScaleTransform ScaleY="-1"/>
+						<SkewTransform/>
+						<RotateTransform/>
+						<TranslateTransform/>
+					</TransformGroup>
+				</Button.RenderTransform>
 				<Button.ToolTip>
 					<ToolTip>
 						Send (Enter)
@@ -73,9 +81,9 @@
 					 x:Name="messageTextBox"
 					 Grid.Row="1"
 					 Text=""
-					 MaxLength="2048"
+					 MaxLength="4096"
 					 Cursor="IBeam"
-					 Margin="40,20,185,20"
+					 Margin="40,20,155,20"
 					 Padding="10,10,15,10"
 					 FontSize="14"
 					 AcceptsReturn="True"
@@ -134,6 +142,19 @@
 						MouseUp="connectLabel_MouseUp"/>
 				</Grid>
 			</StackPanel>
+			<Button Style="{StaticResource LogoutButton}"
+					Grid.Column="0"
+					HorizontalAlignment="Right"
+					VerticalAlignment="Center"
+					Width="50"
+					Height="50"
+					Margin="1"
+					Panel.ZIndex="1"
+					Click="logout_Click">
+				<Button.ToolTip>
+					<ToolTip Content="Logout"/>
+				</Button.ToolTip>
+			</Button>
 		</Grid>
 		<Grid x:Name="groupInfoGrid" Grid.Row="0" Grid.Column="1" Background="#C6D2DE">
 			<Grid.ColumnDefinitions>
@@ -148,11 +169,6 @@
 					<Run x:Name="MembersErr" Text="[Refresh error]" Foreground="Transparent"/>
 				</TextBlock>
 			</StackPanel>
-			<Button x:Name="logout" Grid.Column="1" Width="45" Height="50" HorizontalAlignment="Right" Margin="0 0 20 0" Click="logout_Click">
-				<Button.ToolTip>
-					<ToolTip Content="Logout"/>
-				</Button.ToolTip>
-			</Button>
 		</Grid>
 		<Grid Grid.Row="1" Grid.Column="0" Background="#A0B4C8">
 			<Grid.RowDefinitions>

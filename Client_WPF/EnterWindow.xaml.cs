@@ -251,5 +251,12 @@ namespace VectorChat.Client_WPF
 				EnterButton_MouseUp(null, null);
 			}
 		}
+
+		private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+		{
+			if (autoLoginCheckBox.IsChecked == true)
+				autoLoginCheckBox.IsChecked = false;
+			else autoLoginCheckBox.IsChecked = true;
+		}
 	}
 }

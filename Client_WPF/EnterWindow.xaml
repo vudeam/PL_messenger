@@ -5,7 +5,7 @@
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:Client_WPF"
 		mc:Ignorable="d"
-		Title="Enter" ResizeMode="NoResize" Width="250" Height="410" WindowStartupLocation="CenterScreen"
+		Title="Enter" ResizeMode="NoResize" Width="270" Height="410" WindowStartupLocation="CenterScreen"
 		Background="#FFF7F7F7" KeyDown="Window_KeyDown" Loaded="Window_Loaded">
 	<Window.Resources>
 		<Style x:Key="local_RoundedBorder" TargetType="Rectangle">
@@ -27,11 +27,11 @@
 		<Style x:Key="local_Placeholder" TargetType="TextBlock">
 			<Setter Property="Foreground" Value="DarkGray"/>
 			<Setter Property="FontSize" Value="14"/>
-			<Setter Property="Margin" Value="27 5 5 5"/>
+			<Setter Property="Margin" Value="35 5 5 5"/>
 			<Setter Property="VerticalAlignment" Value="Center"/>
 		</Style>
 		<Style x:Key="local_TransparentTextBox" BasedOn="{StaticResource NoBordersTextBox}" TargetType="TextBox">
-			<Setter Property="Margin" Value="27 5 5 5"/>
+			<Setter Property="Margin" Value="35 5 5 5"/>
 			<Setter Property="FontSize" Value="14"/>
 			<Setter Property="HorizontalAlignment" Value="Left"/>
 			<Setter Property="Background" Value="{x:Null}"/>
@@ -40,7 +40,7 @@
 			<Setter Property="MaxLength" Value="16"/>
 		</Style>
 		<Style x:Key="local_TransparentPasswordBox" BasedOn="{StaticResource NoBordersPasswordBox}" TargetType="PasswordBox">
-			<Setter Property="Margin" Value="27 5 5 5"/>
+			<Setter Property="Margin" Value="35 5 5 5"/>
 			<Setter Property="FontSize" Value="14"/>
 			<Setter Property="HorizontalAlignment" Value="Left"/>
 			<Setter Property="Background" Value="{x:Null}"/>
@@ -95,7 +95,7 @@
                        FontSize="9" Foreground="Gray" MouseUp="SwapButton_Click" FontWeight="DemiBold"/>
 			<StackPanel Orientation="Horizontal" Margin="15" HorizontalAlignment="Center">
 				<CheckBox x:Name="autoLoginCheckBox" VerticalAlignment="Center" Margin="0 1 5 0"/>
-				<TextBlock Text="Connect automatically?" FontSize="12" Foreground="Gray"/>
+				<TextBlock Text="Connect automatically?" FontSize="12" Foreground="Gray" Cursor="Hand" MouseLeftButtonUp="TextBlock_MouseLeftButtonUp"/>
 			</StackPanel>
 		</StackPanel>
 		<Grid x:Name="loadScreen" Grid.RowSpan="2" Visibility="Hidden">
