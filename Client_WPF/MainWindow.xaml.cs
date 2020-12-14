@@ -58,6 +58,10 @@ namespace VectorChat.Client_WPF
 			{
 				gridCellHeight.Height = new GridLength(gridCellStartHeight + (textBox.LineCount - 1) * (textBox.FontSize + 4));
 			}
+			if (textBox.LineCount > maxLines)
+			{
+				gridCellHeight.Height = new GridLength(gridCellStartHeight + maxLines * (textBox.FontSize + 4));
+			}
 		}
 
 		private void OnLoad(object sender, RoutedEventArgs e)
