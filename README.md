@@ -7,7 +7,7 @@
 #### Run
 1. [Download](https://github.com/vudeam/PL_messenger/releases "Project releases") the latest Client app build (**portable**, no installation needed)
 2. Run the `.exe` file **once** and close it. This creates `config.json` file in the same folder where it was ran. The file should look something like that:
-```
+```json
 {
 	"messageRequestTime": 200,
 	"mainWindowHeight": 540.0,
@@ -31,7 +31,7 @@ The project is available for building. It was tested for build in [Microsoft Vis
 #### Run
 1. [Download](https://github.com/vudeam/PL_messenger/releases "Project releases") the latest Server app build (**portable**, no installation needed)
 2. Running the `.exe` file creates `config.json` file in the same folder where the program was ran. The file should look something like that:
-```
+```json
 {
 	"Port": "8080",
 	"EnableFileLogging": false,
@@ -48,6 +48,6 @@ The project is available for building. It was tested for build in [Microsoft Vis
 > Build requires workloads for C# .NET Core applications. You also need to make sure you have installed [dependencies](https://github.com/vudeam/PL_messenger#libraries-and-frameworks-used-in-this-project)
 
 ## Libraries and frameworks used in this project
-* [Jdenticon](https://jdenticon.com/ "Website") — a .NET library for generating highly recognizable identicons ([GitHub repo](https://github.com/dmester/jdenticon-net "Repository"))
-* [Newtonsoft.Json](https://www.newtonsoft.com/json "Website") — Popular high-performance JSON framework for .NET ([GitHub repo](https://github.com/JamesNK/Newtonsoft.Json "Repository"))
-* [Terminal.Gui](https://migueldeicaza.github.io/gui.cs/ "Website") — Terminal GUI toolkit for .NET ([GitHub repo](https://migueldeicaza.github.io/gui.cs/))
+* [Jdenticon](https://jdenticon.com/ "Website") â€” a .NET library for generating highly recognizable identicons ([GitHub repo](https://github.com/dmester/jdenticon-net "Repository"))
+* [Newtonsoft.Json](https://www.newtonsoft.com/json "Website") â€” Popular high-performance JSON framework for .NET ([GitHub repo](https://github.com/JamesNK/Newtonsoft.Json "Repository"))
+* [Terminal.Gui](https://migueldeicaza.github.io/gui.cs/ "Website") â€” Terminal GUI toolkit for .NET ([GitHub repo](https://migueldeicaza.github.io/gui.cs/))
